@@ -1,0 +1,13 @@
+# Base de datos de Docker
+iagrocorr_data/
+
+# Archivos de entorno virtual de Python (si usas uno)
+venv/
+env/
+
+# Variables de entorno y contraseñas
+.env
+
+# Archivos compilados de Python
+__pycache__/
+*.pyc
