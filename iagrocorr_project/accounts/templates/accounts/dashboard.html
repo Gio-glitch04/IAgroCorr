@@ -9,6 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'css/styles2.css' %}?v=1.5">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 </head>
 <body>
@@ -227,6 +229,7 @@
                 </div>
 
             </div> 
+
             <div id="vista-datos-ambientales" class="d-none">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                     <div>
@@ -288,32 +291,33 @@
                             <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                                 <h5 class="fw-bold text-dark mb-0"><i class="bi bi-layers text-success me-2"></i>Capas Geoespaciales</h5>
 
-                                <div class="btn-group" role="group" aria-label="Controles de mapa">
-                                    <button type="button" class="btn btn-outline-success active" id="btn-satelite" onclick="cambiarMapa('satelite')">
-                                        <i class="bi bi-globe-americas me-1"></i> Satélite
-                                    </button>
-                                    <button type="button" class="btn btn-outline-success" id="btn-co2" onclick="cambiarMapa('co2')">
-                                        <i class="bi bi-cloud-arrow-down me-1"></i> CO2 (INTA)
-                                    </button>
-                                    <button type="button" class="btn btn-outline-success" id="btn-suelos" onclick="cambiarMapa('suelos')">
-                                        <i class="bi bi-layers-half me-1"></i> Suelos (INTA)
-                                    </button>
+                                <div class="d-flex flex-wrap gap-2" role="group" aria-label="Controles de mapa">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-primary active" id="btn-satelite" onclick="cambiarFondo('satelite')">
+                                            <i class="bi bi-globe-americas me-1"></i> Satélite
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary" id="btn-politico" onclick="cambiarFondo('politico')">
+                                            <i class="bi bi-map me-1"></i> Político
+                                        </button>
+                                    </div>
+                                
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-success" id="btn-co2" onclick="cambiarCapa('co2')">
+                                            <i class="bi bi-cloud-arrow-down me-1"></i> CO2 (INTA)
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success" id="btn-suelos" onclick="cambiarCapa('suelos')">
+                                            <i class="bi bi-layers-half me-1"></i> Suelos (INTA)
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" id="btn-limpiar" onclick="cambiarCapa('limpiar')">
+                                            <i class="bi bi-x-circle me-1"></i> Limpiar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="card-body p-4">
-                                <div class="map-container" style="border-radius: 12px; overflow: hidden; border: 1px solid var(--card-border);">
-                                    <iframe 
-                                        id="visorMapas"
-                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1810488.0818224538!2d-59.84568853760431!3d-28.790932155700257!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x945037d77bba6613%3A0xc6443c299c279e8e!2sCorrientes%2C%20Argentina!5e1!3m2!1ses!2s!4v1716000000000!5m2!1ses!2s" 
-                                        width="100%" 
-                                        height="100%" 
-                                        frameborder="0" 
-                                        style="border:0;" 
-                                        allowfullscreen="" 
-                                        loading="lazy" 
-                                        referrerpolicy="no-referrer-when-downgrade">
-                                    </iframe>
+                                <div class="map-container" style="border-radius: 12px; overflow: hidden; border: 1px solid var(--card-border); height: 65vh; min-height: 500px;">
+                                    <div id="visorMapas" style="width: 100%; height: 100%;"></div>
                                 </div>
                             </div>
                         </div>
@@ -337,33 +341,95 @@
         });
     </script>
     <script>
-        // URLs de las fuentes geoespaciales
-        const urlsMapas = {
-            // Mapa satelital centrado en Corrientes usando Google Maps Embed
-            satelite: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1810488.0818224538!2d-59.84568853760431!3d-28.790932155700257!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x945037d77bba6613%3A0xc6443c299c279e8e!2sCorrientes%2C%20Argentina!5e1!3m2!1ses!2s!4v1716000000000!5m2!1ses!2s",
-            // Catálogo INTA (CO2)
-            co2: "https://geo-backend.inta.gob.ar/datasets/geonode:Mapa_COS_Nacional/embed",
-            // Catálogo INTA (Suelos Corrientes)
-            suelos: "https://geo-nodo09.inta.gob.ar/maps/261/embed"
-        };
-
-        function cambiarMapa(tipo) {
-            // 1. Cambiar la URL del iframe
-            const iframe = document.getElementById('visorMapas');
-            iframe.src = urlsMapas[tipo];
-
-            // 2. Actualizar el estilo visual de los botones (clase 'active')
-            const botones = ['btn-satelite', 'btn-co2', 'btn-suelos'];
-
-            botones.forEach(btnId => {
-                const btn = document.getElementById(btnId);
-                if (btnId === 'btn-' + tipo) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Inicializar el mapa con límites de zoom
+            var map = L.map('visorMapas', {
+                center: [-28.7, -58.0], // Centro en Corrientes
+                zoom: 7,
+                minZoom: 6, // EVITA el zoom hacia afuera que muestra el espacio gris
+                maxZoom: 18 // Evita el zoom excesivo hacia adentro
             });
-        }
+        
+            // 2. Definir los Mapas Base (Fondos) - Nivel 1
+            var capaSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri',
+                zIndex: 1 // <--- Mantiene el fondo siempre atrás
+            }).addTo(map); 
+        
+            var capaPolitica = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                zIndex: 1 // <--- Mantiene el fondo siempre atrás
+            });
+        
+            // 3. Definir las Capas Superpuestas (INTA) - Nivel 10
+            var capaCO2 = L.tileLayer.wms("https://geo-backend.inta.gob.ar/geoserver/ows", {
+                layers: 'geonode:Mapa_COS_Nacional',
+                format: 'image/png',
+                transparent: true,
+                opacity: 0.7,
+                zIndex: 10 // <--- Obliga a la capa a estar siempre al frente
+            });
+        
+            var capasSuelosINTA = 'geonode:Lomas_arenosas,geonode:suelos_sauce,geonode:suelos_santotome,geonode:suelos_monte_caseros_50000,geonode:suelos_mercedes_50000,geonode:Suelos_Lavalle,geonode:Suelos_Goya,geonode:suelos_alvear,geonode:Suelos_Esquina2,geonode:suelos_empedrado_50000_1d36f0eac40a59619d2452fa1dc7f3d8,geonode:suelos_curuzu,geonode:suelos_yacireta';
+        
+            var capaSuelos = L.tileLayer.wms("https://geo-nodo09.inta.gob.ar/geoserver/ows", {
+                layers: capasSuelosINTA,
+                format: 'image/png',
+                transparent: true,
+                opacity: 0.8,
+                zIndex: 10 // <--- Obliga a la capa a estar siempre al frente
+            });
+        
+            // 4. EL PARCHE DE CARGA (Para el error de la esquina superior izquierda)
+            // Le avisa a Leaflet que recalcule su tamaño cuando abres la pestaña de Datos Ambientales
+            var mapContainer = document.getElementById('visorMapas');
+            if (mapContainer) {
+                var resizeObserver = new ResizeObserver(function() {
+                    map.invalidateSize();
+                });
+                resizeObserver.observe(mapContainer);
+            };
+        
+            // 5. Funciones para controlar los botones
+            window.cambiarFondo = function(tipo) {
+                // Quitamos ambos fondos para evitar que se superpongan
+                if (map.hasLayer(capaSatelite)) map.removeLayer(capaSatelite);
+                if (map.hasLayer(capaPolitica)) map.removeLayer(capaPolitica);
+            
+                // Agregamos el fondo seleccionado
+                if (tipo === 'satelite') {
+                    capaSatelite.addTo(map);
+                    document.getElementById('btn-satelite').classList.add('active');
+                    document.getElementById('btn-politico').classList.remove('active');
+                } else {
+                    capaPolitica.addTo(map);
+                    document.getElementById('btn-politico').classList.add('active');
+                    document.getElementById('btn-satelite').classList.remove('active');
+                }
+            };
+        
+            window.cambiarCapa = function(tipo) {
+                // Limpiamos capas WMS anteriores (Los fondos satélite/político no se tocan)
+                if (map.hasLayer(capaCO2)) map.removeLayer(capaCO2);
+                if (map.hasLayer(capaSuelos)) map.removeLayer(capaSuelos);
+            
+                // Actualizamos los botones activos
+                ['btn-co2', 'btn-suelos', 'btn-limpiar'].forEach(id => {
+                    document.getElementById(id).classList.remove('active');
+                });
+            
+                // Aplicamos la capa correspondiente
+                if (tipo === 'co2') {
+                    capaCO2.addTo(map);
+                    document.getElementById('btn-co2').classList.add('active');
+                } else if (tipo === 'suelos') {
+                    capaSuelos.addTo(map);
+                    document.getElementById('btn-suelos').classList.add('active');
+                } else if (tipo === 'limpiar') {
+                    document.getElementById('btn-limpiar').classList.add('active');
+                }
+            };
+        });
     </script>
     <script>
         // LÓGICA PARA CAMBIAR ENTRE VISTAS DEL MENÚ
