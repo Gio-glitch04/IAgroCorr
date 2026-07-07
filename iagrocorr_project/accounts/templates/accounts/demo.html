@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IAgroCorr | Inteligencia Territorial</title>
+    <style>
+        :root {
+            --primary: #4caf50;
+            --secondary: #2e7d32;
+            --bg-dark: #0b1f15;
+            --text-light: #e0e0e0;
+            --card-bg: rgba(255, 255, 255, 0.05);
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            text-align: center;
+            padding: 80px 20px 40px;
+            border-bottom: 1px solid var(--secondary);
+        }
+        h1 { color: var(--primary); font-size: 3em; margin-bottom: 10px; }
+        h2 { color: #a5d6a7; font-weight: 300; margin-top: 0; }
+        .badge {
+            display: inline-block;
+            background: var(--secondary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--secondary);
+            border-radius: 12px;
+            padding: 25px;
+            transition: transform 0.3s ease;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card h3 { color: var(--primary); margin-top: 0; }
+        
+        /* Spinner */
+        .spinner {
+            margin: 30px auto;
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(76, 175, 80, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            font-size: 0.9em;
+            color: #888;
+            border-top: 1px solid var(--secondary);
+        }
+        a.btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 25px;
+            background-color: var(--primary);
+            color: var(--bg-dark);
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        a.btn:hover { background-color: #66bb6a; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>IAgroCorr</h1>
+        <h2>Inteligencia Territorial para el Litoral Argentico</h2>
+        <div class="spinner"></div>
+        <p><strong>Calibrando modelos geoespaciales... El prototipo interactivo estará disponible pronto.</strong></p>
+        <a href="{% url 'login' %}" class="btn">Ser Beta Tester</a>
+    </header>
+
+    <div class="container">
+        <h2 style="text-align: center; color: var(--primary);">Impacto y Funcionalidades</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>📊 Análisis de Rinde</h3>
+                <p>Monitoreo preciso del rendimiento de cultivos, evaluación de costos operativos y herramientas avanzadas para la planificación de futuras campañas.</p>
+            </div>
+            <div class="card">
+                <h3>🌍 Gemelos Globales</h3>
+                <p>Nuestra IA compara las características de tu suelo con regiones de todo el mundo para descubrir nuevos mercados y cultivos de rotación con alto potencial.</p>
+            </div>
+            <div class="card">
+                <h3>🌱 Proyección Ambiental</h3>
+                <p>Sistemas de alerta temprana de estrés hídrico y evaluación de impacto ambiental, facilitando la adopción de prácticas sustentables.</p>
+            </div>
+        </div>
+
+        <h2 style="text-align: center; color: var(--primary); margin-top: 60px;">Tecnología y Datos</h2>
+        <div style="text-align: center;">
+            <span class="badge">Google Earth Engine</span>
+            <span class="badge">IDERA & INTA</span>
+            <span class="badge">Python (Machine Learning)</span>
+            <span class="badge">PostGIS</span>
+            <span class="badge">FastAPI</span>
+            <span class="badge">Docker</span>
+        </div>
+
+        <h2 style="text-align: center; color: var(--primary); margin-top: 60px;">Próximos Pasos (Roadmap)</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>1. Integración de Datos (Data Warehouse)</h3>
+                <p>Estandarización de las capas vectoriales de IDECorr con los datos ráster de GEE.</p>
+            </div>
+            <div class="card">
+                <h3>2. Interfaz y Visualización</h3>
+                <p>Lanzamiento del primer mapa interactivo web sobre lotes de prueba.</p>
+            </div>
+            <div class="card">
+                <h3>3. Modelado (CRISP-DM)</h3>
+                <p>Entrenamiento de los algoritmos de Machine Learning y establecimiento de métricas de rendimiento.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Proyecto Emprende U 2026 | Licenciatura en Sistemas</p>
+    </footer>
+
+</body>
+</html>
