@@ -8,15 +8,19 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{% static 'css/styles2.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles2.css' %}?v=1.5">
 
 </head>
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-custom sticky-top px-lg-4">
-        <div class="container-fluid p-0">
+        <div class="container-fluid p-0 d-flex align-items-center">
+            <button class="btn btn-link text-dark d-lg-none p-1 me-2 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+                <i class="bi bi-list fs-2"></i>
+            </button>
+
             <a class="navbar-brand navbar-brand-custom" href="#">
-                <i class="bi bi-tractor"></i> IAgroCorr
+                IAgroCorr
             </a>
 
             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenidoSuperior" aria-controls="navbarContenidoSuperior" aria-expanded="false" aria-label="Navegación superior">
@@ -70,234 +74,252 @@
 
     <div class="main-wrapper">
         
-        <aside class="sidebar-custom" id="sidebar">
-            <div class="d-flex align-items-center justify-content-between mb-4 mt-2 px-2">
-                <span class="fw-bold text-dark menu-label" style="font-size: 1.1rem;">Menú Principal</span>
-                <button id="sidebarToggle" title="Contraer/Expandir Menú">
-                    <i class="bi bi-list"></i>
-                </button>
+        <aside class="sidebar-custom offcanvas-lg offcanvas-start bg-white" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+            
+            <div class="offcanvas-header border-bottom d-lg-none">
+                <h5 class="offcanvas-title fw-bold text-dark" id="sidebarLabel">
+                    <i class="bi bi-tractor text-success"></i> IAgroCorr
+                </h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Cerrar menú"></button>
             </div>
 
-            <div class="sidebar-heading">Monitoreo Operativo</div>
-            <nav class="nav flex-column sidebar-nav mb-4">
-                <a class="nav-link active" href="#" title="Panel de Control">
-                    <i class="bi bi-grid-1x2-fill"></i> 
-                    <span class="sidebar-text">Panel de Control</span>
-                </a>
-                <a class="nav-link" href="#" title="Lotes y Parcelas">
-                    <i class="bi bi-map"></i> 
-                    <span class="sidebar-text">Lotes y Parcelas</span>
-                </a>
-                <a class="nav-link" href="#" title="Datos Ambientales">
-                    <i class="bi bi-moisture"></i> 
-                    <span class="sidebar-text">Datos Ambientales</span>
-                </a>
-                <a class="nav-link" href="#" title="Salud del Cultivo">
-                    <i class="bi bi-tree"></i> 
-                    <span class="sidebar-text">Salud del Cultivo</span>
-                </a>
-            </nav>
+            <div class="offcanvas-body flex-column p-0 p-lg-1">
+                
+                <div class="d-none d-lg-flex align-items-center justify-content-between mb-4 mt-2 px-2">
+                    <span class="fw-bold text-dark menu-label" style="font-size: 1.1rem;">Menú Principal</span>
+                    <button id="sidebarToggle" class="btn btn-sm btn-light border-0 shadow-none" title="Contraer/Expandir Menú">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                </div>
 
-            <div class="sidebar-heading">Informes y Logs</div>
-            <nav class="nav flex-column sidebar-nav">
-                <a class="nav-link" href="#" title="Estadísticas Avanzadas">
-                    <i class="bi bi-graph-up-arrow"></i> 
-                    <span class="sidebar-text">Estadísticas Avanzadas</span>
-                </a>
-                <a class="nav-link" href="#" title="Reportes Generados">
-                    <i class="bi bi-file-earmark-bar-graph"></i> 
-                    <span class="sidebar-text">Reportes Generados</span>
-                </a>
-            </nav>
+                <div class="px-3 px-lg-0 mt-3 mt-lg-0">
+                    <div class="sidebar-heading">Monitoreo Operativo</div>
+                    <nav class="nav flex-column sidebar-nav mb-4">
+                        <a class="nav-link active" href="#" id="btn-sidebar-panel" title="Panel de Control" onclick="cambiarVista('panel')">
+                            <i class="bi bi-grid-1x2-fill"></i> 
+                            <span class="sidebar-text">Panel de Control</span>
+                        </a>
+                        <a class="nav-link" href="#" title="Lotes y Parcelas">
+                            <i class="bi bi-map"></i> 
+                            <span class="sidebar-text">Lotes y Parcelas</span>
+                        </a>
+                        <a class="nav-link" href="#" id="btn-sidebar-ambiental" title="Datos Ambientales" onclick="cambiarVista('ambiental')">
+                            <i class="bi bi-moisture"></i> 
+                            <span class="sidebar-text">Datos Ambientales</span>
+                        </a>
+                        <a class="nav-link" href="#" title="Salud del Cultivo">
+                            <i class="bi bi-tree"></i> 
+                            <span class="sidebar-text">Salud del Cultivo</span>
+                        </a>
+                    </nav>
+
+                    <div class="sidebar-heading">Informes y Logs</div>
+                    <nav class="nav flex-column sidebar-nav">
+                        <a class="nav-link" href="#" title="Estadísticas Avanzadas">
+                            <i class="bi bi-graph-up-arrow"></i> 
+                            <span class="sidebar-text">Estadísticas Avanzadas</span>
+                        </a>
+                        <a class="nav-link" href="#" title="Reportes Generados">
+                            <i class="bi bi-file-earmark-bar-graph"></i> 
+                            <span class="sidebar-text">Reportes Generados</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
         </aside>
 
         <main class="content-container">
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-                <div>
-                    <h4 class="mb-1 text-dark" style="font-weight: 700;">Panel de Control Agro-Inteligente</h4>
-                    <p class="text-muted mb-0" style="font-size: 0.9rem;">Visualización de datos en tiempo real de la plataforma IAgroCorr.</p>
+            
+            <div id="vista-panel-control">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <div>
+                        <h4 class="mb-1 text-dark" style="font-weight: 700;">Panel de Control Agro-Inteligente</h4>
+                        <p class="text-muted mb-0" style="font-size: 0.9rem;">Visualización de datos en tiempo real de la plataforma IAgroCorr.</p>
+                    </div>
+                    <button class="btn btn-success d-flex align-items-center gap-2" style="background-color: var(--primary-green); border: none; border-radius: 8px;">
+                        <i class="bi bi-plus-circle"></i> 
+                        <span class="d-none d-sm-inline">Añadir Lote</span>
+                    </button>
                 </div>
-                <button class="btn btn-success d-flex align-items-center gap-2" style="background-color: var(--primary-green); border: none; border-radius: 8px;">
-                    <i class="bi bi-plus-circle"></i> 
-                    <span class="d-none d-sm-inline">Añadir Lote</span>
-                </button>
-            </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="metric-card">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="metric-title">Área Total Monitoreada</div>
-                                <div class="metric-value">1,245 Ha</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="metric-title">Área Total Monitoreada</div>
+                                    <div class="metric-value">1,245 Ha</div>
+                                </div>
+                                <span class="badge bg-success-subtle text-success p-2 rounded"><i class="bi bi-globe fs-5"></i></span>
                             </div>
-                            <span class="badge bg-success-subtle text-success p-2 rounded"><i class="bi bi-globe fs-5"></i></span>
                         </div>
                     </div>
-                </div>
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="metric-card">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="metric-title">Humedad Promedio</div>
-                                <div class="metric-value">24.8 %</div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="metric-title">Humedad Promedio</div>
+                                    <div class="metric-value">24.8 %</div>
+                                </div>
+                                <span class="badge bg-primary-subtle text-primary p-2 rounded"><i class="bi bi-droplet fs-5"></i></span>
                             </div>
-                            <span class="badge bg-primary-subtle text-primary p-2 rounded"><i class="bi bi-droplet fs-5"></i></span>
                         </div>
                     </div>
-                </div>
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="metric-card">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="metric-title">Índice NDVI Promedio</div>
-                                <div class="metric-value">0.72</div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="metric-title">Índice NDVI Promedio</div>
+                                    <div class="metric-value">0.72</div>
+                                </div>
+                                <span class="badge bg-warning-subtle text-warning p-2 rounded"><i class="bi bi-sun fs-5"></i></span>
                             </div>
-                            <span class="badge bg-warning-subtle text-warning p-2 rounded"><i class="bi bi-sun fs-5"></i></span>
                         </div>
                     </div>
-                </div>
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="metric-card">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="metric-title">Alertas Activas</div>
-                                <div class="metric-value">3 Globales</div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="metric-title">Alertas Activas</div>
+                                    <div class="metric-value">3 Globales</div>
+                                </div>
+                                <span class="badge bg-danger-subtle text-danger p-2 rounded"><i class="bi bi-exclamation-octagon fs-5"></i></span>
                             </div>
-                            <span class="badge bg-danger-subtle text-danger p-2 rounded"><i class="bi bi-exclamation-octagon fs-5"></i></span>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4">
-                <div class="col-12 col-lg-8">
-                    <div class="map-container">
-                        <iframe 
-                            src="https://maps.google.com/maps?q=Provincia+de+Corrientes,+Argentina&t=k&z=7&ie=UTF8&iwloc=&output=embed" 
-                            width="100%" 
-                            height="100%" 
-                            frameborder="0" 
-                            style="border:0;" 
-                            allowfullscreen="" 
-                            aria-hidden="false" 
-                            tabindex="0">
-                        </iframe>
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-4">
-                    <div class="bg-white border rounded-3 p-4 h-100" style="box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-activity text-success me-2"></i>Actividad de Lotes Recientes</h6>
-                        <ul class="list-unstyled mb-0" style="font-size: 0.9rem;">
-                            <li class="mb-3 pb-3 border-bottom">
-                                <span class="text-muted d-block" style="font-size: 0.75rem;">Hace 10 min</span>
-                                <strong>Lote Norte Alfa:</strong> Análisis NDVI actualizado con éxito desde Sentinel-2.
-                            </li>
-                            <li class="mb-3 pb-3 border-bottom">
-                                <span class="text-muted d-block" style="font-size: 0.75rem;">Hace 1 hora</span>
-                                <strong>Parcela Sur 04:</strong> Sensor de suelo reportó caída de humedad por debajo del 10%.
-                            </li>
-                            <li class="mb-0">
-                                <span class="text-muted d-block" style="font-size: 0.75rem;">Ayer</span>
-                                <strong>Lote Central Maíz:</strong> Alta de geolocalización registrada correctamente en PostgreSQL.
-                            </li>
-                        </ul>
+                <div class="row g-4">
+                    <div class="col-12 col-lg-8">
+                        <div class="map-container">
+                            <iframe 
+                                src="https://maps.google.com/maps?q=Provincia+de+Corrientes,+Argentina&t=k&z=7&ie=UTF8&iwloc=&output=embed" 
+                                width="100%" 
+                                height="100%" 
+                                frameborder="0" 
+                                style="border:0;" 
+                                allowfullscreen="" 
+                                aria-hidden="false" 
+                                tabindex="0">
+                            </iframe>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-                <div>
-                    <h4 class="mb-1 text-dark" style="font-weight: 700;">Datos Ambientales - Provincia de Corrientes</h4>
-                    <p class="text-muted mb-0" style="font-size: 0.9rem;">Monitoreo climático y geoespacial de la región.</p>
+                    <div class="col-12 col-lg-4">
+                        <div class="bg-white border rounded-3 p-4 h-100" style="box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-activity text-success me-2"></i>Actividad de Lotes Recientes</h6>
+                            <ul class="list-unstyled mb-0" style="font-size: 0.9rem;">
+                                <li class="mb-3 pb-3 border-bottom">
+                                    <span class="text-muted d-block" style="font-size: 0.75rem;">Hace 10 min</span>
+                                    <strong>Lote Norte Alfa:</strong> Análisis NDVI actualizado con éxito desde Sentinel-2.
+                                </li>
+                                <li class="mb-3 pb-3 border-bottom">
+                                    <span class="text-muted d-block" style="font-size: 0.75rem;">Hace 1 hora</span>
+                                    <strong>Parcela Sur 04:</strong> Sensor de suelo reportó caída de humedad por debajo del 10%.
+                                </li>
+                                <li class="mb-0">
+                                    <span class="text-muted d-block" style="font-size: 0.75rem;">Ayer</span>
+                                    <strong>Lote Central Maíz:</strong> Alta de geolocalización registrada correctamente en PostgreSQL.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="metric-card">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="metric-title">Humedad Relativa</div>
-                                <div class="metric-value">68 %</div>
-                            </div>
-                            <span class="badge bg-info-subtle text-info p-2 rounded"><i class="bi bi-moisture fs-5"></i></span>
-                        </div>
+            </div> 
+            <div id="vista-datos-ambientales" class="d-none">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <div>
+                        <h4 class="mb-1 text-dark" style="font-weight: 700;">Datos Ambientales - Provincia de Corrientes</h4>
+                        <p class="text-muted mb-0" style="font-size: 0.9rem;">Monitoreo climático y geoespacial de la región.</p>
                     </div>
                 </div>
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="metric-card">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="metric-title">Niveles de CO2</div>
-                                <div class="metric-value">412 ppm</div>
-                            </div>
-                            <span class="badge bg-secondary-subtle text-secondary p-2 rounded"><i class="bi bi-cloud-haze2 fs-5"></i></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="metric-card">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="metric-title">Índice NDVI (Promedio)</div>
-                                <div class="metric-value">0.75</div>
-                            </div>
-                            <span class="badge bg-success-subtle text-success p-2 rounded"><i class="bi bi-tree fs-5"></i></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="metric-card">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="metric-title">Temperatura Promedio</div>
-                                <div class="metric-value">26.5 °C</div>
-                            </div>
-                            <span class="badge bg-warning-subtle text-warning p-2 rounded"><i class="bi bi-thermometer-sun fs-5"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="row g-4 mb-4">
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm rounded-4">
-                        <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-layers text-success me-2"></i>Capas Geoespaciales</h5>
-
-                            <div class="btn-group" role="group" aria-label="Controles de mapa">
-                                <button type="button" class="btn btn-outline-success active" id="btn-satelite" onclick="cambiarMapa('satelite')">
-                                    <i class="bi bi-globe-americas me-1"></i> Satélite
-                                </button>
-                                <button type="button" class="btn btn-outline-success" id="btn-co2" onclick="cambiarMapa('co2')">
-                                    <i class="bi bi-cloud-arrow-down me-1"></i> CO2 (INTA)
-                                </button>
-                                <button type="button" class="btn btn-outline-success" id="btn-suelos" onclick="cambiarMapa('suelos')">
-                                    <i class="bi bi-layers-half me-1"></i> Suelos (INTA)
-                                </button>
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="metric-title">Humedad Relativa</div>
+                                    <div class="metric-value">68 %</div>
+                                </div>
+                                <span class="badge bg-info-subtle text-info p-2 rounded"><i class="bi bi-moisture fs-5"></i></span>
                             </div>
                         </div>
-
-                        <div class="card-body p-4">
-                            <div class="map-container" style="border-radius: 12px; overflow: hidden; border: 1px solid var(--card-border);">
-                                <iframe 
-                                    id="visorMapas"
-                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1810488.0818224538!2d-59.84568853760431!3d-28.790932155700257!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x945037d77bba6613%3A0xc6443c299c279e8e!2sCorrientes%2C%20Argentina!5e1!3m2!1ses!2s!4v1716000000000!5m2!1ses!2s" 
-                                    width="100%" 
-                                    height="100%" 
-                                    frameborder="0" 
-                                    style="border:0;" 
-                                    allowfullscreen="" 
-                                    loading="lazy" 
-                                    referrerpolicy="no-referrer-when-downgrade">
-                                </iframe>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="metric-title">Niveles de CO2</div>
+                                    <div class="metric-value">412 ppm</div>
+                                </div>
+                                <span class="badge bg-secondary-subtle text-secondary p-2 rounded"><i class="bi bi-cloud-haze2 fs-5"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="metric-title">Índice NDVI (Promedio)</div>
+                                    <div class="metric-value">0.75</div>
+                                </div>
+                                <span class="badge bg-success-subtle text-success p-2 rounded"><i class="bi bi-tree fs-5"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="metric-title">Temperatura Promedio</div>
+                                    <div class="metric-value">26.5 °C</div>
+                                </div>
+                                <span class="badge bg-warning-subtle text-warning p-2 rounded"><i class="bi bi-thermometer-sun fs-5"></i></span>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-layers text-success me-2"></i>Capas Geoespaciales</h5>
+
+                                <div class="btn-group" role="group" aria-label="Controles de mapa">
+                                    <button type="button" class="btn btn-outline-success active" id="btn-satelite" onclick="cambiarMapa('satelite')">
+                                        <i class="bi bi-globe-americas me-1"></i> Satélite
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success" id="btn-co2" onclick="cambiarMapa('co2')">
+                                        <i class="bi bi-cloud-arrow-down me-1"></i> CO2 (INTA)
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success" id="btn-suelos" onclick="cambiarMapa('suelos')">
+                                        <i class="bi bi-layers-half me-1"></i> Suelos (INTA)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="card-body p-4">
+                                <div class="map-container" style="border-radius: 12px; overflow: hidden; border: 1px solid var(--card-border);">
+                                    <iframe 
+                                        id="visorMapas"
+                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1810488.0818224538!2d-59.84568853760431!3d-28.790932155700257!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x945037d77bba6613%3A0xc6443c299c279e8e!2sCorrientes%2C%20Argentina!5e1!3m2!1ses!2s!4v1716000000000!5m2!1ses!2s" 
+                                        width="100%" 
+                                        height="100%" 
+                                        frameborder="0" 
+                                        style="border:0;" 
+                                        allowfullscreen="" 
+                                        loading="lazy" 
+                                        referrerpolicy="no-referrer-when-downgrade">
+                                    </iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> 
         </main>
     </div>
 
@@ -307,11 +329,6 @@
         document.addEventListener("DOMContentLoaded", function() {
             const sidebar = document.getElementById('sidebar');
             const sidebarToggleBtn = document.getElementById('sidebarToggle');
-
-            // Colapsar la barra lateral por defecto si estamos en un dispositivo móvil (menos de 768px de ancho)
-            if (window.innerWidth < 768) {
-                sidebar.classList.add('sidebar-collapsed');
-            }
 
             // Lógica del botón de la barra lateral (Estilo Microsoft)
             sidebarToggleBtn.addEventListener('click', function() {
@@ -347,6 +364,62 @@
                 }
             });
         }
+    </script>
+    <script>
+        // LÓGICA PARA CAMBIAR ENTRE VISTAS DEL MENÚ
+        function cambiarVista(vista) {
+            // 1. Capturar los contenedores de las vistas
+            const vistaPanel = document.getElementById('vista-panel-control');
+            const vistaAmbiental = document.getElementById('vista-datos-ambientales');
+
+            // 2. Capturar los botones de la barra lateral
+            const btnPanel = document.getElementById('btn-sidebar-panel');
+            const btnAmbiental = document.getElementById('btn-sidebar-ambiental');
+
+            // 3. Ocultar ambas vistas y quitar la clase 'active' de ambos botones
+            vistaPanel.classList.add('d-none');
+            vistaAmbiental.classList.add('d-none');
+            btnPanel.classList.remove('active');
+            btnAmbiental.classList.remove('active');
+
+            // 4. Mostrar la vista correcta y pintar de verde el botón presionado
+            if (vista === 'panel') {
+                vistaPanel.classList.remove('d-none');
+                btnPanel.classList.add('active');
+            } else if (vista === 'ambiental') {
+                vistaAmbiental.classList.remove('d-none');
+                btnAmbiental.classList.add('active');
+            }
+        }
+    </script>
+    <script>
+        // ==========================================
+        // LÓGICA DE DESLIZAMIENTO (SWIPE) PARA MÓVILES
+        // ==========================================
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const swipeThreshold = 60; // Distancia mínima que debe recorrer el dedo
+        const edgeThreshold = 30; // Rango en píxeles del borde izquierdo donde debe iniciar el gesto
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            
+            // Solo evaluamos el deslizamiento en pantallas móviles
+            if (window.innerWidth < 992) { 
+                // Condición: El dedo debe empezar muy cerca del borde izquierdo Y deslizarse hacia la derecha
+                if (touchStartX < edgeThreshold && (touchEndX - touchStartX > swipeThreshold)) {
+                    
+                    // Llamamos a la API nativa de Bootstrap para mostrar el Offcanvas
+                    const sidebarOffcanvas = document.getElementById('sidebar');
+                    const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(sidebarOffcanvas);
+                    bsOffcanvas.show();
+                }
+            }
+        });
     </script>
 </body>
 </html>

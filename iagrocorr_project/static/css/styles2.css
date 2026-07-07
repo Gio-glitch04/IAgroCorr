@@ -196,7 +196,14 @@ body {
     .content-container {
         padding: 1rem;
     }
+    .sidebar-custom {
+        width: 280px !important;
+        padding: 0 !important; /* El padding lo maneja Bootstrap en móviles */
+        border-right: none;
+        z-index: 1045 !important;
+    }
 }
+
 
 /* Contenedor del Mapa Satelital */
 .map-container {
