@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from accounts.views import login_view, register_view, dashboard_view, logout_view, profile_view, demo_view
+from accounts.views import login_view, register_view, dashboard_view, logout_view, profile_view, demo_view, global_twins_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,6 +25,7 @@ urlpatterns = [
     path('dashboard/', dashboard_view, name='dashboard'),
     path('logout/', logout_view, name='logout'),       # <-- Nueva ruta
     path('profile/', profile_view, name='profile'),
+    path('global-twins/', global_twins_view, name='global-twins'),
     #path('', login_view, name='home'), #pagina raiz
     path('', demo_view, name='demo')
 ]

@@ -1,0 +1,66 @@
+<nav class="navbar navbar-expand-lg navbar-custom sticky-top px-lg-4">
+        <div class="container-fluid p-0 d-flex align-items-center">
+            <button class="btn btn-link text-dark d-lg-none p-1 me-2 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+                <i class="bi bi-list fs-2"></i>
+            </button>
+
+            <a class="navbar-brand navbar-brand-custom" href="#">
+                IAgroCorr
+            </a>
+
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenidoSuperior" aria-controls="navbarContenidoSuperior" aria-expanded="false" aria-label="Navegación superior">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContenidoSuperior">
+                <ul class="nav nav-pills top-tabs mx-auto my-3 my-lg-0" id="upperTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                            <i class="bi bi-columns-gap me-2"></i> Resumen General
+                        </a>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                        <a href="{% url 'global-twins' %}" class="nav-link {% if request.resolver_match.url_name == 'global-twins' %}active{% endif %}">
+                            <i class="bi bi-globe2 me-2"></i> Gemelos Globales
+                        </a>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                        <a href="#" class="nav-link">
+                            <i class="bi bi-clipboard-data me-2"></i> Rendimiento Técnico
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-2 nav-actions-mobile justify-content-lg-end pb-2 pb-lg-0">
+                    <button class="nav-icon-btn" type="button" title="Notificaciones">
+                        <i class="bi bi-bell"></i>
+                        <span class="notification-badge"></span>
+                    </button>
+
+                    <button class="nav-icon-btn" type="button" title="Configuración">
+                        <i class="bi bi-gear"></i>
+                    </button>
+
+                    <div class="vr mx-2 text-secondary opacity-25 d-none d-lg-block" style="height: 25px;"></div>
+
+                    <div class="dropdown">
+                        <button class="btn btn-light d-flex align-items-center gap-2 border" type="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 10px; padding: 0.4rem 0.8rem;">
+                            <i class="bi bi-person-circle text-secondary fs-5"></i>
+                            <span class="font-weight-500" style="font-size: 0.9rem;">
+                                {{ request.user.get_full_name|default:request.user.username }}
+                            </span>
+                            <i class="bi bi-chevron-down text-muted" style="font-size: 0.75rem;"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border mt-2" aria-labelledby="profileMenu">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2 text-muted"></i> Mi Perfil</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2 text-muted"></i> Configuración</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>

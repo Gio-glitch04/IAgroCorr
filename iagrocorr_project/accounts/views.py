@@ -120,3 +120,7 @@ def profile_view(request):
 
 def demo_view(request):
     return render(request, 'accounts/demo.html')
+
+@login_required
+def global_twins_view(request):
+    return render(request, 'accounts/global-twins.html')
