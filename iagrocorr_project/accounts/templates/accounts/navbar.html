@@ -1,10 +1,12 @@
+{% load static %}
 <nav class="navbar navbar-expand-lg navbar-custom sticky-top px-lg-4">
         <div class="container-fluid p-0 d-flex align-items-center">
             <button class="btn btn-link text-dark d-lg-none p-1 me-2 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
                 <i class="bi bi-list fs-2"></i>
             </button>
 
-            <a class="navbar-brand navbar-brand-custom" href="#">
+            <a class="navbar-brand navbar-brand-custom" href="{% url 'dashboard' %}">
+                <img src="{% static 'images/iagrocorr_logo_n.png' %}" height="35" class="d-inline-block align-text-top" style="margin-right: 8px;">
                 IAgroCorr
             </a>
 
