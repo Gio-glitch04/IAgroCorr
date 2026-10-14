@@ -12,9 +12,21 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Configuración automática de GDAL / GEOS para GeoDjango en Windows
+if os.name == 'nt':
+    VENV_BASE = Path(sys.prefix)
+    OSGEO_DIR = VENV_BASE / 'Lib' / 'site-packages' / 'osgeo'
+    if OSGEO_DIR.exists():
+        os.environ['PATH'] = str(OSGEO_DIR) + ';' + os.environ.get('PATH', '')
+        os.environ['PROJ_LIB'] = str(OSGEO_DIR / 'data' / 'proj')
+        os.environ['GDAL_DATA'] = str(OSGEO_DIR / 'data' / 'gdal')
+        GDAL_LIBRARY_PATH = str(OSGEO_DIR / 'gdal.dll')
+        GEOS_LIBRARY_PATH = str(OSGEO_DIR / 'geos_c.dll')
 
 
 # Quick-start development settings - unsuitable for production
