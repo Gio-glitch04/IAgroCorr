@@ -10,7 +10,10 @@ def lotes_geojson(request):
     """
     Retorna los lotes del usuario en formato JSON para Leaflet
     """
-    lotes = Lote.objects.filter(productor=request.user, activo=True)
+    if request.user.is_superuser:
+        lotes = Lote.objects.filter(activo=True)
+    else:
+        lotes = Lote.objects.filter(productor=request.user, activo=True)
     features = []
     for l in lotes:
         features.append({
