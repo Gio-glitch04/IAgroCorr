@@ -44,6 +44,47 @@ class ZonaUrbana(models.Model):
         return f"{self.nombre} ({self.departamento or 'Corrientes'})"
 
 
+class AreaProtegida(models.Model):
+    """
+    Capa de Conservación Ambiental: Representa el Parque y Reserva Natural Provincial
+    Esteros del Iberá u otras áreas de reserva de Corrientes bajo normativa RAMSAR / Provincial.
+    """
+    nombre = models.CharField(max_length=150, help_text="Ej: Reserva Natural Provincial Esteros del Iberá")
+    categoria = models.CharField(max_length=100, default="Parque y Reserva Provincial", help_text="Ej: Parque Nacional, Reserva Provincial, Sitio Ramsar")
+    geom = models.MultiPolygonField(srid=4326)
+    buffer_amortiguamiento_metros = models.IntegerField(default=1000, help_text="Buffer de amortiguamiento en metros (Ley Provincial)")
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Área Protegida / Reserva"
+        verbose_name_plural = "Áreas Protegidas (Reservas)"
+        ordering = ['nombre']
+
+    def __str__(self):
+        return f"{self.nombre} ({self.categoria})"
+
+
+class CuerpoDeAgua(models.Model):
+    """
+    Capa Hidrológica: Representa ríos, arroyos, esteros y lagunas de Corrientes
+    donde rigen restricciones de distancias de aplicación y amortiguamiento hídrico.
+    """
+    nombre = models.CharField(max_length=150, help_text="Ej: Río Paraná, Río Uruguay, Río Corriente, Río Santa Lucía, Laguna Iberá")
+    tipo = models.CharField(max_length=50, default="Río Principal", help_text="Ej: Río Principal, Arroyo, Estero, Laguna")
+    geom = models.GeometryField(srid=4326, help_text="Geometría vectorial (Línea o Polígono)")
+    buffer_seguridad_metros = models.IntegerField(default=200, help_text="Metros de distancia mínima de aplicación fitosanitaria")
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Cuerpo de Agua"
+        verbose_name_plural = "Cuerpos de Agua"
+        ordering = ['nombre']
+
+    def __str__(self):
+        return f"{self.nombre} ({self.tipo})"
+
+
+
 class Lote(models.Model):
     """
     Dimensión Espacial: Representa el polígono físico del terreno en Corrientes/NEA.

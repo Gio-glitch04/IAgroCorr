@@ -1,16 +1,18 @@
 import json
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from .models import Lote, ZonaUrbana, NivelRiesgo, GemeloGlobal
+from .models import Lote, ZonaUrbana, NivelRiesgo, GemeloGlobal, AreaProtegida, CuerpoDeAgua
+from .rules_engine import evaluar_riesgo_lote
 
 
 @login_required
 def lotes_geojson(request):
     """
-    Retorna los lotes del usuario en formato GeoJSON para Leaflet
+    Retorna los lotes del usuario en formato GeoJSON para Leaflet,
+    enriquecidos con las métricas espaciales y el semáforo del DW.
     """
     if request.user.is_superuser:
         lotes = Lote.objects.filter(activo=True)
@@ -18,6 +20,15 @@ def lotes_geojson(request):
         lotes = Lote.objects.filter(productor=request.user, activo=True)
     features = []
     for l in lotes:
+        ultima_med = l.historial_dw.order_by('-fecha_captura').first()
+        dist_reserva = ultima_med.distancia_reserva_metros if ultima_med else None
+        dist_agua = ultima_med.distancia_agua_metros if ultima_med else None
+        score = 10
+        alertas = []
+        if ultima_med and isinstance(ultima_med.observaciones_json, dict):
+            score = ultima_med.observaciones_json.get('score_riesgo', 10)
+            alertas = ultima_med.observaciones_json.get('diagnostico', {}).get('alertas_criticas', [])
+
         features.append({
             "type": "Feature",
             "properties": {
@@ -25,7 +36,11 @@ def lotes_geojson(request):
                 "nombre": l.nombre,
                 "cultivo": l.cultivo_actual,
                 "riesgo": l.riesgo_actual,
-                "superficie_ha": str(l.superficie_ha) if l.superficie_ha else None
+                "superficie_ha": str(l.superficie_ha) if l.superficie_ha else None,
+                "distancia_reserva_m": dist_reserva,
+                "distancia_agua_m": dist_agua,
+                "score_riesgo": score,
+                "alertas": alertas
             },
             "geometry": json.loads(l.geom.geojson)
         })
@@ -33,6 +48,7 @@ def lotes_geojson(request):
         "type": "FeatureCollection",
         "features": features
     })
+
 
 
 @login_required
@@ -117,16 +133,21 @@ def crear_lote_api(request):
             activo=True
         )
 
+        # 4. EJECUCIÓN INMEDIATA DEL MOTOR DE REGLAS ESPACIALES POSTGIS
+        eval_resultado = evaluar_riesgo_lote(nuevo_lote, actualizar_dw=True)
+
         return JsonResponse({
             "ok": True,
-            "mensaje": f"¡Lote '{nuevo_lote.nombre}' guardado exitosamente!",
+            "mensaje": f"¡Lote '{nuevo_lote.nombre}' guardado y clasificado como '{eval_resultado['semaforo']}' por el motor de reglas!",
             "lote": {
                 "id": nuevo_lote.id,
                 "nombre": nuevo_lote.nombre,
                 "cultivo": nuevo_lote.cultivo_actual,
                 "superficie_ha": str(nuevo_lote.superficie_ha) if nuevo_lote.superficie_ha else "0.0",
-                "riesgo": nuevo_lote.riesgo_actual,
-                "geometry": json.loads(nuevo_lote.geom.geojson)
+                "riesgo": eval_resultado["semaforo"],
+                "score_riesgo": eval_resultado["score_riesgo"],
+                "geometry": json.loads(nuevo_lote.geom.geojson),
+                "evaluacion": eval_resultado
             }
         })
 
@@ -134,6 +155,69 @@ def crear_lote_api(request):
         return JsonResponse({"ok": False, "error": "Formato JSON inválido."}, status=400)
     except Exception as e:
         return JsonResponse({"ok": False, "error": f"Error interno: {str(e)}"}, status=500)
+
+
+@login_required
+def capas_ambientales_geojson(request):
+    """
+    Retorna la cartografía ambiental protegida en GeoJSON:
+    - Reserva Natural Esteros del Iberá (Área Protegida)
+    - Cursos de Agua y Red Fluvial (Ríos Paraná, Uruguay, Corriente, Santa Lucía, etc.)
+    """
+    features = []
+
+    # Áreas Protegidas (Esteros del Iberá)
+    reservas = AreaProtegida.objects.filter(activo=True)
+    for r in reservas:
+        features.append({
+            "type": "Feature",
+            "properties": {
+                "id": r.id,
+                "nombre": r.nombre,
+                "categoria": r.categoria,
+                "tipo_capa": "area_protegida",
+                "buffer_m": r.buffer_amortiguamiento_metros,
+            },
+            "geometry": json.loads(r.geom.geojson)
+        })
+
+    # Cuerpos de Agua y Ríos
+    aguas = CuerpoDeAgua.objects.filter(activo=True)
+    for a in aguas:
+        features.append({
+            "type": "Feature",
+            "properties": {
+                "id": a.id,
+                "nombre": a.nombre,
+                "tipo": a.tipo,
+                "tipo_capa": "cuerpo_agua",
+                "buffer_m": a.buffer_seguridad_metros,
+            },
+            "geometry": json.loads(a.geom.geojson)
+        })
+
+    return JsonResponse({
+        "type": "FeatureCollection",
+        "features": features
+    })
+
+
+@login_required
+def evaluar_lote_api(request, lote_id):
+    """
+    Ejecuta el motor de reglas espaciales en tiempo real para un lote específico
+    y retorna el diagnóstico en formato JSON con distancias e infracciones.
+    """
+    if request.user.is_superuser:
+        lote = get_object_or_404(Lote, id=lote_id, activo=True)
+    else:
+        lote = get_object_or_404(Lote, id=lote_id, productor=request.user, activo=True)
+
+    resultado = evaluar_riesgo_lote(lote, actualizar_dw=True)
+    return JsonResponse({
+        "ok": True,
+        "evaluacion": resultado
+    })
 
 
 @login_required
@@ -161,3 +245,4 @@ def gemelos_globales_api(request):
             "descripcion": g.descripcion_climatica,
         })
     return JsonResponse(data, safe=False)
+

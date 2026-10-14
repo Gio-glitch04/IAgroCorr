@@ -215,11 +215,15 @@
               <div class="map-container position-relative">
                 <div id="mapaLotes" style="width: 100%; height: 100%; border-radius: 16px;"></div>
                 <div id="mapaLeyenda" class="position-absolute bottom-0 start-0 m-3 p-2 bg-white bg-opacity-90 rounded-3 shadow-sm border" style="z-index: 1000; font-size: 0.8rem;">
-                  <div class="fw-bold mb-1 text-dark"><i class="bi bi-layers-half text-success me-1"></i>Semáforo de Riesgo</div>
-                  <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#198754; width:12px; height:12px; padding:0; border-radius:3px;"> </span> Seguro / Óptimo</div>
-                  <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#ffc107; width:12px; height:12px; padding:0; border-radius:3px;"> </span> Precaución</div>
-                  <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#dc3545; width:12px; height:12px; padding:0; border-radius:3px;"> </span> Riesgo Crítico</div>
+                  <div class="fw-bold mb-1 text-dark"><i class="bi bi-shield-check text-success me-1"></i>Semáforo Espacial PostGIS</div>
+                  <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#198754; width:12px; height:12px; padding:0; border-radius:3px;"> </span> Óptimo (Score &lt; 40)</div>
+                  <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#ffc107; width:12px; height:12px; padding:0; border-radius:3px;"> </span> Precaución (Score 40-79)</div>
+                  <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#dc3545; width:12px; height:12px; padding:0; border-radius:3px;"> </span> Riesgo Crítico (Score &ge; 80)</div>
+                  <hr class="my-1">
+                  <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.75rem;"><span style="border-bottom: 2px dashed #0dcaf0; width: 14px; display:inline-block;"></span> Reserva Esteros del Iberá</div>
+                  <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.75rem;"><span style="border-bottom: 2px solid #0d6efd; width: 14px; display:inline-block;"></span> Cursos de Agua / Ríos</div>
                 </div>
+
               </div>
             </div>
 
@@ -867,7 +871,7 @@
                 onEachFeature: function (feature, layer) {
                   const p = feature.properties;
                   layer.bindTooltip(
-                    `🚫 <strong>${p.nombre}</strong><br><span class="text-danger small">Zona Urbana - Exclusión de Lotes</span>`,
+                    `🚫 <strong>${p.nombre}</strong><br><span class="text-danger small">Zona Urbana - Exclusión de Lotes (${p.buffer_m}m)</span>`,
                     { sticky: true }
                   );
                 }
@@ -877,7 +881,62 @@
           })
           .catch(err => console.warn("Aviso al cargar zonas urbanas:", err));
 
-        // 2. CARGAR LOTES GEOJSON EXISTENTES
+        // 1.1 CARGAR CAPAS AMBIENTALES PROTEGIDAS (Esteros del Iberá y Red Fluvial)
+        fetch('/monitoring/api/capas-ambientales-geojson/')
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.features && data.features.length > 0) {
+              // Capa Esteros del Iberá
+              const iberaFeatures = data.features.filter(f => f.properties.tipo_capa === 'area_protegida');
+              if (iberaFeatures.length > 0) {
+                const iberaLayer = L.geoJSON({ type: "FeatureCollection", features: iberaFeatures }, {
+                  style: {
+                    color: '#055160',
+                    fillColor: '#0dcaf0',
+                    fillOpacity: 0.22,
+                    weight: 2.5,
+                    dashArray: '6, 6'
+                  },
+                  onEachFeature: function (feature, layer) {
+                    const p = feature.properties;
+                    layer.bindTooltip(
+                      `🌿 <strong>${p.nombre}</strong><br><span class="text-info small">${p.categoria} (Buffer ${p.buffer_m}m)</span>`,
+                      { sticky: true }
+                    );
+                  }
+                }).addTo(map);
+                layerControl.addOverlay(iberaLayer, "🌿 Reserva Esteros del Iberá");
+              }
+
+              // Capa Cursos de Agua y Ríos
+              const aguasFeatures = data.features.filter(f => f.properties.tipo_capa === 'cuerpo_agua');
+              if (aguasFeatures.length > 0) {
+                const aguasLayer = L.geoJSON({ type: "FeatureCollection", features: aguasFeatures }, {
+                  style: function (f) {
+                    const isPolygon = f.geometry.type.includes('Polygon');
+                    return {
+                      color: '#0d6efd',
+                      fillColor: '#0d6efd',
+                      fillOpacity: isPolygon ? 0.35 : 0,
+                      weight: isPolygon ? 1.5 : 3.5,
+                      opacity: 0.85
+                    };
+                  },
+                  onEachFeature: function (feature, layer) {
+                    const p = feature.properties;
+                    layer.bindTooltip(
+                      `💧 <strong>${p.nombre}</strong><br><span class="text-primary small">${p.tipo} - Amortiguamiento ${p.buffer_m}m</span>`,
+                      { sticky: true }
+                    );
+                  }
+                }).addTo(map);
+                layerControl.addOverlay(aguasLayer, "💧 Cursos de Agua y Ríos");
+              }
+            }
+          })
+          .catch(err => console.warn("Aviso al cargar capas ambientales:", err));
+
+        // 2. CARGAR LOTES GEOJSON EXISTENTES CON REGLAS ESPACIALES
         let lotesLayer = null;
         function cargarLotes() {
           fetch('/monitoring/api/lotes-geojson/')
@@ -904,16 +963,42 @@
                   onEachFeature: function (feature, layer) {
                     const p = feature.properties;
                     const badgeClass = p.riesgo === 'VERDE' ? 'bg-success' : (p.riesgo === 'AMARILLO' ? 'bg-warning text-dark' : 'bg-danger');
+                    
+                    const formatDist = (d) => {
+                      if (d === null || d === undefined) return 'S/D';
+                      return d >= 1000 ? (d / 1000).toFixed(1) + ' km' : d.toFixed(0) + ' m';
+                    };
+
+                    let alertasHtml = '';
+                    if (p.alertas && p.alertas.length > 0) {
+                      alertasHtml = `
+                        <div class="alert alert-danger p-1 mt-2 mb-0" style="font-size: 0.73rem;">
+                          <i class="bi bi-exclamation-triangle-fill me-1"></i> ${p.alertas[0]}
+                        </div>
+                      `;
+                    } else {
+                      alertasHtml = `
+                        <div class="badge bg-success-subtle text-success mt-2 py-1 px-2 w-100 text-start" style="font-size: 0.72rem;">
+                          <i class="bi bi-shield-check me-1"></i> Amortiguamientos conformes a norma
+                        </div>
+                      `;
+                    }
+
                     const popupHtml = `
-                      <div style="min-width: 200px; font-family: system-ui, sans-serif;">
+                      <div style="min-width: 240px; font-family: system-ui, sans-serif;">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                           <strong class="text-dark fs-6">${p.nombre}</strong>
-                          <span class="badge ${badgeClass}">${p.riesgo}</span>
+                          <span class="badge ${badgeClass}">${p.riesgo} (${p.score_riesgo || 10}/100)</span>
                         </div>
                         <hr class="my-1 border-secondary">
-                        <div class="text-muted" style="font-size: 0.85rem;">
+                        <div class="text-muted" style="font-size: 0.82rem;">
                           <div><strong>Cultivo:</strong> ${p.cultivo || 'No registrado'}</div>
                           <div><strong>Superficie:</strong> ${p.superficie_ha ? p.superficie_ha + ' Ha' : 'S/D'}</div>
+                          <div class="mt-1 pt-1 border-top">
+                            <div><i class="bi bi-water text-primary me-1"></i><strong>Cuerpo de Agua:</strong> ${formatDist(p.distancia_agua_m)}</div>
+                            <div><i class="bi bi-tree text-success me-1"></i><strong>Esteros del Iberá:</strong> ${formatDist(p.distancia_reserva_m)}</div>
+                          </div>
+                          ${alertasHtml}
                         </div>
                       </div>
                     `;
@@ -939,6 +1024,7 @@
             });
         }
         cargarLotes();
+
 
         // 3. HERRAMIENTAS DE DIBUJO CON LEAFLET-GEOMAN
         map.pm.addControls({

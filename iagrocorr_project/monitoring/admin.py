@@ -1,6 +1,34 @@
 from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
-from .models import Lote, AplicacionInsumo, HechoMedicionAmbiental, ZonaUrbana, GemeloGlobal
+from .models import Lote, AplicacionInsumo, HechoMedicionAmbiental, ZonaUrbana, GemeloGlobal, AreaProtegida, CuerpoDeAgua
+
+
+@admin.register(AreaProtegida)
+class AreaProtegidaAdmin(GISModelAdmin):
+    list_display = ('nombre', 'categoria', 'buffer_amortiguamiento_metros', 'activo')
+    list_filter = ('categoria', 'activo')
+    search_fields = ('nombre', 'categoria')
+    gis_widget_kwargs = {
+        'attrs': {
+            'default_zoom': 9,
+            'default_lat': -28.30,
+            'default_lon': -57.40, # Esteros del Iberá
+        }
+    }
+
+
+@admin.register(CuerpoDeAgua)
+class CuerpoDeAguaAdmin(GISModelAdmin):
+    list_display = ('nombre', 'tipo', 'buffer_seguridad_metros', 'activo')
+    list_filter = ('tipo', 'activo')
+    search_fields = ('nombre', 'tipo')
+    gis_widget_kwargs = {
+        'attrs': {
+            'default_zoom': 9,
+            'default_lat': -28.70,
+            'default_lon': -58.00,
+        }
+    }
 
 
 @admin.register(ZonaUrbana)
@@ -14,6 +42,7 @@ class ZonaUrbanaAdmin(GISModelAdmin):
             'default_lon': -58.00,
         }
     }
+
 
 
 @admin.register(Lote)
