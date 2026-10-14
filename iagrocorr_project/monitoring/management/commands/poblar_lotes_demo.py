@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import MultiPolygon, Polygon
-from monitoring.models import Lote, NivelRiesgo, HechoMedicionAmbiental, ZonaUrbana
+from django.contrib.gis.geos import MultiPolygon, Polygon, Point
+from monitoring.models import Lote, NivelRiesgo, HechoMedicionAmbiental, ZonaUrbana, GemeloGlobal
 from datetime import date, timedelta
 
 
@@ -147,4 +147,93 @@ class Command(BaseCommand):
             }
         )
 
-        self.stdout.write(self.style.SUCCESS("¡Lotes demo y mediciones ambientales cargados con éxito para " + user.username + "!"))
+        # 4. GEMELOS GLOBALES (Firmas agroclimáticas análogas)
+        gemelos_data = [
+            {
+                "nombre": "Región de Uruguaiana / Itaqui, Brasil",
+                "pais": "Brasil",
+                "geom": Point(-56.80, -29.75, srid=4326),
+                "similitud_pct": 95,
+                "humedad_anual_pct": 76,
+                "ndvi_min": 0.65,
+                "ndvi_max": 0.80,
+                "ndvi_promedio": 0.725,
+                "cultivos_principales": "Arroz bajo riego, Ganadería bovina",
+                "descripcion_climatica": "Subtropical húmedo sin estación seca, régimen térmico y edáfico análogo a la cuenca del Río Uruguay.",
+                "orden": 1,
+            },
+            {
+                "nombre": "Cuenca de la Laguna Merín, Uruguay",
+                "pais": "Uruguay",
+                "geom": Point(-54.15, -33.23, srid=4326),
+                "similitud_pct": 88,
+                "humedad_anual_pct": 72,
+                "ndvi_min": 0.60,
+                "ndvi_max": 0.75,
+                "ndvi_promedio": 0.675,
+                "cultivos_principales": "Arroz, Pasturas naturales, Soja",
+                "descripcion_climatica": "Templado húmedo pampeano con alta radiación solar estival y suelos hidromórficos de alta retención.",
+                "orden": 2,
+            },
+            {
+                "nombre": "Delta del Río Mississippi, EE.UU.",
+                "pais": "EE.UU.",
+                "geom": Point(-91.25, 33.55, srid=4326),
+                "similitud_pct": 85,
+                "humedad_anual_pct": 74,
+                "ndvi_min": 0.55,
+                "ndvi_max": 0.70,
+                "ndvi_promedio": 0.625,
+                "cultivos_principales": "Soja, Algodón, Arroz, Maíz",
+                "descripcion_climatica": "Subtropical húmedo con llanuras aluviales y régimen hidrológico comparable a humedales correntinos.",
+                "orden": 3,
+            },
+            {
+                "nombre": "Provincia de Hunan, China",
+                "pais": "China",
+                "geom": Point(112.30, 29.20, srid=4326),
+                "similitud_pct": 82,
+                "humedad_anual_pct": 80,
+                "ndvi_min": 0.60,
+                "ndvi_max": 0.85,
+                "ndvi_promedio": 0.725,
+                "cultivos_principales": "Arrozales intensivos de doble ciclo, Té",
+                "descripcion_climatica": "Monzónico subtropical con veranos cálidos, lluvias estivales intensas y elevada humedad constante.",
+                "orden": 4,
+            },
+            {
+                "nombre": "KwaZulu-Natal, Sudáfrica",
+                "pais": "Sudáfrica",
+                "geom": Point(31.50, -28.80, srid=4326),
+                "similitud_pct": 78,
+                "humedad_anual_pct": 68,
+                "ndvi_min": 0.50,
+                "ndvi_max": 0.70,
+                "ndvi_promedio": 0.60,
+                "cultivos_principales": "Caña de azúcar, Cítricos, Pasturas subtropicales",
+                "descripcion_climatica": "Subtropical costero y valles húmedos con régimen estacional de precipitaciones y topografía ondulada.",
+                "orden": 5,
+            },
+        ]
+
+        for g in gemelos_data:
+            GemeloGlobal.objects.update_or_create(
+                nombre=g["nombre"],
+                defaults={
+                    "pais": g["pais"],
+                    "geom": g["geom"],
+                    "similitud_pct": g["similitud_pct"],
+                    "humedad_anual_pct": g["humedad_anual_pct"],
+                    "ndvi_min": g["ndvi_min"],
+                    "ndvi_max": g["ndvi_max"],
+                    "ndvi_promedio": g["ndvi_promedio"],
+                    "cultivos_principales": g["cultivos_principales"],
+                    "descripcion_climatica": g["descripcion_climatica"],
+                    "orden": g["orden"],
+                    "activo": True
+                }
+            )
+
+        self.stdout.write(self.style.SUCCESS("[OK] 5 Gemelos Globales cargados/actualizados con exito en PostGIS."))
+        self.stdout.write(self.style.SUCCESS("¡Lotes demo, mediciones ambientales y gemelos globales cargados con éxito para " + user.username + "!"))
+

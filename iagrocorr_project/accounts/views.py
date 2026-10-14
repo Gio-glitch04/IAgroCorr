@@ -8,8 +8,9 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
+import json
 from django.db.models import Sum, Avg, Q
-from monitoring.models import Lote, HechoMedicionAmbiental, NivelRiesgo
+from monitoring.models import Lote, HechoMedicionAmbiental, NivelRiesgo, GemeloGlobal
 
 @never_cache
 def login_view(request):
@@ -159,4 +160,25 @@ def demo_view(request):
 
 @login_required
 def global_twins_view(request):
-    return render(request, 'accounts/global-twins.html')
+    gemelos = GemeloGlobal.objects.filter(activo=True).order_by('orden', '-similitud_pct')
+    gemelos_list = []
+    for g in gemelos:
+        gemelos_list.append({
+            "id": g.id,
+            "nombre": g.nombre,
+            "pais": g.pais,
+            "lat": g.geom.y,
+            "lng": g.geom.x,
+            "sim": g.similitud_pct,
+            "hum": g.humedad_anual_pct,
+            "ndviMin": g.ndvi_min,
+            "ndviMax": g.ndvi_max,
+            "ndviText": g.ndvi_rango_texto,
+            "ndviVal": g.ndvi_val_pct,
+            "cultivos": g.cultivos_principales,
+            "descripcion": g.descripcion_climatica,
+        })
+    return render(request, 'accounts/global-twins.html', {
+        'gemelos_json': json.dumps(gemelos_list),
+        'gemelos_count': len(gemelos_list)
+    })

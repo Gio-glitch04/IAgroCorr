@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from .models import Lote, ZonaUrbana, NivelRiesgo
+from .models import Lote, ZonaUrbana, NivelRiesgo, GemeloGlobal
 
 
 @login_required
@@ -134,3 +134,30 @@ def crear_lote_api(request):
         return JsonResponse({"ok": False, "error": "Formato JSON inválido."}, status=400)
     except Exception as e:
         return JsonResponse({"ok": False, "error": f"Error interno: {str(e)}"}, status=500)
+
+
+@login_required
+def gemelos_globales_api(request):
+    """
+    Retorna la lista de gemelos globales ordenados por similitud y orden
+    con sus coordenadas PostGIS WGS84 y firmas agroclimáticas.
+    """
+    gemelos = GemeloGlobal.objects.filter(activo=True).order_by('orden', '-similitud_pct')
+    data = []
+    for g in gemelos:
+        data.append({
+            "id": g.id,
+            "nombre": g.nombre,
+            "pais": g.pais,
+            "lat": g.geom.y,
+            "lng": g.geom.x,
+            "sim": g.similitud_pct,
+            "hum": g.humedad_anual_pct,
+            "ndviMin": g.ndvi_min,
+            "ndviMax": g.ndvi_max,
+            "ndviText": g.ndvi_rango_texto,
+            "ndviVal": g.ndvi_val_pct,
+            "cultivos": g.cultivos_principales,
+            "descripcion": g.descripcion_climatica,
+        })
+    return JsonResponse(data, safe=False)

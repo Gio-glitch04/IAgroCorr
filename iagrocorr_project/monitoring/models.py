@@ -158,3 +158,51 @@ class HechoMedicionAmbiental(models.Model):
 
     def __str__(self):
         return f"{self.lote.nombre} [{self.fecha_captura}] -> {self.semaforo_resultado}"
+
+
+# ==========================================
+# 3. GEMELOS GLOBALES (Firmas Agroclimáticas Análogas)
+# ==========================================
+
+class GemeloGlobal(models.Model):
+    """
+    Dimensión Territorial Global: Regiones del mundo con firmas agroclimáticas
+    análogas o comparables a Corrientes y la cuenca del NEA.
+    """
+    nombre = models.CharField(max_length=150, help_text="Ej: Región de Uruguaiana / Itaqui, Brasil")
+    pais = models.CharField(max_length=100, help_text="Ej: Brasil, Uruguay, EE.UU., China, Sudáfrica")
+    geom = models.PointField(srid=4326, help_text="Coordenadas geográficas WGS84 del centroide representativo")
+    
+    similitud_pct = models.IntegerField(help_text="Porcentaje de similitud agroclimática global (0-100)")
+    humedad_anual_pct = models.IntegerField(help_text="Porcentaje de humedad anual promedio")
+    
+    ndvi_min = models.FloatField(help_text="NDVI mínimo histórico en ciclo activo")
+    ndvi_max = models.FloatField(help_text="NDVI máximo histórico en ciclo activo")
+    ndvi_promedio = models.FloatField(help_text="NDVI promedio representativo")
+    
+    cultivos_principales = models.CharField(max_length=200, blank=True, null=True, help_text="Ej: Arroz, Soja, Ganadería")
+    descripcion_climatica = models.TextField(blank=True, null=True, help_text="Síntesis bioclimática y similitud agronómica")
+    
+    orden = models.IntegerField(default=0, help_text="Prioridad de visualización en la matriz")
+    activo = models.BooleanField(default=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Gemelo Global"
+        verbose_name_plural = "Gemelos Globales"
+        ordering = ['orden', '-similitud_pct']
+
+    def __str__(self):
+        return f"{self.nombre} ({self.pais}) - {self.similitud_pct}%"
+
+    @property
+    def ndvi_rango_texto(self):
+        if self.ndvi_min is not None and self.ndvi_max is not None:
+            return f"{self.ndvi_min:.2f} - {self.ndvi_max:.2f}"
+        return "-"
+
+    @property
+    def ndvi_val_pct(self):
+        if self.ndvi_promedio is not None:
+            return round(self.ndvi_promedio * 100, 1)
+        return 0.0
+

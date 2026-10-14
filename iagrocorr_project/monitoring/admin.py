@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
-from .models import Lote, AplicacionInsumo, HechoMedicionAmbiental, ZonaUrbana
+from .models import Lote, AplicacionInsumo, HechoMedicionAmbiental, ZonaUrbana, GemeloGlobal
 
 
 @admin.register(ZonaUrbana)
@@ -30,6 +30,20 @@ class LoteAdmin(GISModelAdmin):
     }
 
 
+@admin.register(GemeloGlobal)
+class GemeloGlobalAdmin(GISModelAdmin):
+    list_display = ('nombre', 'pais', 'similitud_pct', 'humedad_anual_pct', 'ndvi_promedio', 'orden', 'activo')
+    list_filter = ('pais', 'activo')
+    search_fields = ('nombre', 'pais', 'cultivos_principales')
+    gis_widget_kwargs = {
+        'attrs': {
+            'default_zoom': 2,
+            'default_lat': 10.0,
+            'default_lon': 0.0, # Vista global
+        }
+    }
+
+
 @admin.register(AplicacionInsumo)
 class AplicacionInsumoAdmin(admin.ModelAdmin):
     list_display = ('lote', 'fecha_aplicacion', 'ingrediente_activo', 'dosis_ha', 'unidad_medida', 'banda_toxicologica')
@@ -43,3 +57,4 @@ class HechoMedicionAmbientalAdmin(admin.ModelAdmin):
     list_filter = ('semaforo_resultado', 'fecha_captura')
     search_fields = ('lote__nombre',)
     date_hierarchy = 'fecha_captura'
+
