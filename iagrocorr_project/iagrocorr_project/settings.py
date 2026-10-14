@@ -95,7 +95,7 @@ DATABASES = {
         'USER': 'admin_iagrocorr',
         'PASSWORD': 'i4Gr0coRr_dB',
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '5433',
     }
 }
 
