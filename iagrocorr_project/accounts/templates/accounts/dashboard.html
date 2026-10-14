@@ -150,7 +150,8 @@
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
                     <div class="metric-title">Área Total Monitoreada</div>
-                    <div class="metric-value">1,245 Ha</div>
+                    <div class="metric-value">{{ total_hectareas|floatformat:1 }} Ha</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">{{ total_lotes }} lote{{ total_lotes|pluralize }} activo{{ total_lotes|pluralize }}</small>
                   </div>
                   <span class="badge bg-success-subtle text-success p-2 rounded"
                     ><i class="bi bi-globe fs-5"></i
@@ -163,7 +164,8 @@
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
                     <div class="metric-title">Humedad Promedio</div>
-                    <div class="metric-value">24.8 %</div>
+                    <div class="metric-value">{{ humedad_promedio }} %</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">Capa arable superficial</small>
                   </div>
                   <span class="badge bg-primary-subtle text-primary p-2 rounded"
                     ><i class="bi bi-droplet fs-5"></i
@@ -176,7 +178,8 @@
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
                     <div class="metric-title">Índice NDVI Promedio</div>
-                    <div class="metric-value">0.72</div>
+                    <div class="metric-value">{{ ndvi_promedio }}</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">Vigor Sentinel-2</small>
                   </div>
                   <span class="badge bg-warning-subtle text-warning p-2 rounded"
                     ><i class="bi bi-sun fs-5"></i
@@ -189,7 +192,8 @@
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
                     <div class="metric-title">Alertas Activas</div>
-                    <div class="metric-value">3 Globales</div>
+                    <div class="metric-value">{{ alertas_activas }}</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">Lote{{ alertas_activas|pluralize }} con advertencia</small>
                   </div>
                   <span class="badge bg-danger-subtle text-danger p-2 rounded"
                     ><i class="bi bi-exclamation-octagon fs-5"></i
@@ -222,27 +226,31 @@
                   Lotes Recientes
                 </h6>
                 <ul class="list-unstyled mb-0" style="font-size: 0.9rem">
+                  {% for act in actividades_recientes %}
                   <li class="mb-3 pb-3 border-bottom">
-                    <span class="text-muted d-block" style="font-size: 0.75rem"
-                      >Hace 10 min</span
-                    >
-                    <strong>Lote Norte Alfa:</strong> Análisis NDVI actualizado
-                    con éxito desde Sentinel-2.
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="text-muted" style="font-size: 0.75rem">
+                        {{ act.fecha_captura|date:"d/m/Y" }}
+                      </span>
+                      {% if act.semaforo_resultado == 'VERDE' %}
+                        <span class="badge bg-success-subtle text-success py-1 px-2" style="font-size: 0.7rem;">Óptimo</span>
+                      {% elif act.semaforo_resultado == 'AMARILLO' %}
+                        <span class="badge bg-warning-subtle text-warning py-1 px-2" style="font-size: 0.7rem;">Precaución</span>
+                      {% else %}
+                        <span class="badge bg-danger-subtle text-danger py-1 px-2" style="font-size: 0.7rem;">Crítico</span>
+                      {% endif %}
+                    </div>
+                    <strong class="d-block text-dark mt-1">{{ act.lote.nombre }}</strong>
+                    <span class="text-secondary" style="font-size: 0.85rem;">
+                      NDVI: <strong>{{ act.ndvi_promedio|default:"-" }}</strong> | Humedad: <strong>{{ act.humedad_suelo_pct|default:"-" }}%</strong>
+                    </span>
                   </li>
-                  <li class="mb-3 pb-3 border-bottom">
-                    <span class="text-muted d-block" style="font-size: 0.75rem"
-                      >Hace 1 hora</span
-                    >
-                    <strong>Parcela Sur 04:</strong> Sensor de suelo reportó
-                    caída de humedad por debajo del 10%.
+                  {% empty %}
+                  <li class="text-muted text-center py-4">
+                    <i class="bi bi-clock-history fs-4 d-block mb-1 text-secondary"></i>
+                    Sin mediciones recientes registradas.
                   </li>
-                  <li class="mb-0">
-                    <span class="text-muted d-block" style="font-size: 0.75rem"
-                      >Ayer</span
-                    >
-                    <strong>Lote Central Maíz:</strong> Alta de geolocalización
-                    registrada correctamente en PostgreSQL.
-                  </li>
+                  {% endfor %}
                 </ul>
               </div>
             </div>
