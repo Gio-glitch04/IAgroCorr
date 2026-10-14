@@ -1,14 +1,43 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Polygon
-from monitoring.models import Lote, NivelRiesgo, HechoMedicionAmbiental
+from monitoring.models import Lote, NivelRiesgo, HechoMedicionAmbiental, ZonaUrbana
 from datetime import date, timedelta
 
 
 class Command(BaseCommand):
-    help = 'Puebla 3 lotes representativos en la provincia de Corrientes con mediciones del DW'
+    help = 'Puebla 3 lotes y las zonas urbanas de Corrientes con mediciones del DW'
 
     def handle(self, *args, **options):
+        # 0. ZONAS URBANAS DE EXCLUSIÓN
+        zonas = [
+            ("Ejido Urbano Corrientes Capital", "Capital", [
+                (-58.87, -27.44), (-58.78, -27.44), (-58.78, -27.52), (-58.87, -27.52), (-58.87, -27.44)
+            ]),
+            ("Ejido Urbano Goya", "Goya", [
+                (-59.29, -29.12), (-59.23, -29.12), (-59.23, -29.17), (-59.29, -29.17), (-59.29, -29.12)
+            ]),
+            ("Ejido Urbano Mercedes", "Mercedes", [
+                (-58.10, -29.16), (-58.05, -29.16), (-58.05, -29.21), (-58.10, -29.21), (-58.10, -29.16)
+            ]),
+            ("Ejido Urbano Paso de los Libres", "Paso de los Libres", [
+                (-57.12, -29.69), (-57.05, -29.69), (-57.05, -29.74), (-57.12, -29.74), (-57.12, -29.69)
+            ]),
+            ("Ejido Urbano Gobernador Virasoro", "Santo Tomé", [
+                (-56.06, -28.03), (-56.00, -28.03), (-56.00, -28.08), (-56.06, -28.08), (-56.06, -28.03)
+            ]),
+        ]
+        for nombre_z, depto_z, coords_z in zonas:
+            ZonaUrbana.objects.get_or_create(
+                nombre=nombre_z,
+                defaults={
+                    'departamento': depto_z,
+                    'geom': MultiPolygon(Polygon(coords_z)),
+                    'radio_buffer_metros': 500
+                }
+            )
+        self.stdout.write(self.style.SUCCESS("[OK] Zonas urbanas de exclusion verificadas en PostGIS"))
+
         user = User.objects.first()
         if not user:
             self.stdout.write(self.style.ERROR("No hay usuarios registrados. Crea uno con createsuperuser primero."))

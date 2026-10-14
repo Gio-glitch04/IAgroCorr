@@ -1,6 +1,19 @@
 from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
-from .models import Lote, AplicacionInsumo, HechoMedicionAmbiental
+from .models import Lote, AplicacionInsumo, HechoMedicionAmbiental, ZonaUrbana
+
+
+@admin.register(ZonaUrbana)
+class ZonaUrbanaAdmin(GISModelAdmin):
+    list_display = ('nombre', 'departamento', 'radio_buffer_metros')
+    search_fields = ('nombre', 'departamento')
+    gis_widget_kwargs = {
+        'attrs': {
+            'default_zoom': 10,
+            'default_lat': -28.70,
+            'default_lon': -58.00,
+        }
+    }
 
 
 @admin.register(Lote)

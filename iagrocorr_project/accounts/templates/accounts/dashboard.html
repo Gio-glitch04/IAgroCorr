@@ -19,8 +19,13 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css"
+    />
     <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
   </head>
   <body>
     {% include 'accounts/contact_alert.html' %}
@@ -132,15 +137,17 @@
               </p>
             </div>
             <button
-              class="btn btn-success d-flex align-items-center gap-2"
+              id="btnIniciarDibujo"
+              class="btn btn-success d-flex align-items-center gap-2 shadow-sm"
+              title="Haz clic para activar el dibujo de polígonos sobre el mapa"
               style="
                 background-color: var(--primary-green);
                 border: none;
                 border-radius: 8px;
               "
             >
-              <i class="bi bi-plus-circle"></i>
-              <span class="d-none d-sm-inline">Añadir Lote</span>
+              <i class="bi bi-pencil-square"></i>
+              <span class="d-none d-sm-inline">Añadir Lote en Mapa</span>
             </button>
           </div>
 
@@ -836,69 +843,232 @@
         const sateliteHibrido = L.layerGroup([esriSatellite, esriLabels]);
         sateliteHibrido.addTo(map);
 
-        // Selector de capa base
-        L.control.layers({
+        // Selector de capas
+        const baseMaps = {
           "Satelital Híbrido": sateliteHibrido,
           "Mapa Calles (OSM)": osm
-        }, null, { position: 'topright' }).addTo(map);
+        };
+        const overlayMaps = {};
+        const layerControl = L.control.layers(baseMaps, overlayMaps, { position: 'topright' }).addTo(map);
 
-        // Cargar los lotes GeoJSON del usuario logueado
-        fetch('/monitoring/api/lotes-geojson/')
-          .then(res => {
-            if (!res.ok) throw new Error("Respuesta no OK de la API");
-            return res.json();
-          })
+        // 1. CARGAR CAPA DE ZONAS URBANAS (EXCLUSIÓN)
+        fetch('/monitoring/api/zonas-urbanas-geojson/')
+          .then(res => res.json())
           .then(data => {
             if (data && data.features && data.features.length > 0) {
-              const lotesLayer = L.geoJSON(data, {
-                style: function (feature) {
-                  const riesgo = feature.properties.riesgo;
-                  let color = '#198754';
-                  if (riesgo === 'AMARILLO') color = '#ffc107';
-                  else if (riesgo === 'ROJO') color = '#dc3545';
-                  return {
-                    color: color,
-                    fillColor: color,
-                    fillOpacity: 0.45,
-                    weight: 2.5
-                  };
+              const urbanLayer = L.geoJSON(data, {
+                style: {
+                  color: '#dc3545',
+                  fillColor: '#6c757d',
+                  fillOpacity: 0.35,
+                  weight: 2,
+                  dashArray: '5, 5'
                 },
                 onEachFeature: function (feature, layer) {
                   const p = feature.properties;
-                  const badgeClass = p.riesgo === 'VERDE' ? 'bg-success' : (p.riesgo === 'AMARILLO' ? 'bg-warning text-dark' : 'bg-danger');
-                  const popupHtml = `
-                    <div style="min-width: 200px; font-family: system-ui, sans-serif;">
-                      <div class="d-flex justify-content-between align-items-center mb-1">
-                        <strong class="text-dark fs-6">${p.nombre}</strong>
-                        <span class="badge ${badgeClass}">${p.riesgo}</span>
-                      </div>
-                      <hr class="my-1 border-secondary">
-                      <div class="text-muted" style="font-size: 0.85rem;">
-                        <div><strong>Cultivo:</strong> ${p.cultivo || 'No registrado'}</div>
-                        <div><strong>Superficie:</strong> ${p.superficie_ha ? p.superficie_ha + ' Ha' : 'S/D'}</div>
-                      </div>
-                    </div>
-                  `;
-                  layer.bindPopup(popupHtml);
-
-                  layer.on({
-                    mouseover: function (e) {
-                      e.target.setStyle({ fillOpacity: 0.75, weight: 3.5 });
-                    },
-                    mouseout: function (e) {
-                      lotesLayer.resetStyle(e.target);
-                    }
-                  });
+                  layer.bindTooltip(
+                    `🚫 <strong>${p.nombre}</strong><br><span class="text-danger small">Zona Urbana - Exclusión de Lotes</span>`,
+                    { sticky: true }
+                  );
                 }
               }).addTo(map);
-
-              // Enfocar el mapa automáticamente sobre los lotes del productor
-              map.fitBounds(lotesLayer.getBounds(), { padding: [40, 40] });
+              layerControl.addOverlay(urbanLayer, "🚫 Zonas Urbanas (Exclusiones)");
             }
           })
-          .catch(err => {
-            console.warn("Información de lotes GeoJSON:", err);
+          .catch(err => console.warn("Aviso al cargar zonas urbanas:", err));
+
+        // 2. CARGAR LOTES GEOJSON EXISTENTES
+        let lotesLayer = null;
+        function cargarLotes() {
+          fetch('/monitoring/api/lotes-geojson/')
+            .then(res => {
+              if (!res.ok) throw new Error("Respuesta no OK de la API");
+              return res.json();
+            })
+            .then(data => {
+              if (data && data.features && data.features.length > 0) {
+                if (lotesLayer) map.removeLayer(lotesLayer);
+                lotesLayer = L.geoJSON(data, {
+                  style: function (feature) {
+                    const riesgo = feature.properties.riesgo;
+                    let color = '#198754';
+                    if (riesgo === 'AMARILLO') color = '#ffc107';
+                    else if (riesgo === 'ROJO') color = '#dc3545';
+                    return {
+                      color: color,
+                      fillColor: color,
+                      fillOpacity: 0.45,
+                      weight: 2.5
+                    };
+                  },
+                  onEachFeature: function (feature, layer) {
+                    const p = feature.properties;
+                    const badgeClass = p.riesgo === 'VERDE' ? 'bg-success' : (p.riesgo === 'AMARILLO' ? 'bg-warning text-dark' : 'bg-danger');
+                    const popupHtml = `
+                      <div style="min-width: 200px; font-family: system-ui, sans-serif;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                          <strong class="text-dark fs-6">${p.nombre}</strong>
+                          <span class="badge ${badgeClass}">${p.riesgo}</span>
+                        </div>
+                        <hr class="my-1 border-secondary">
+                        <div class="text-muted" style="font-size: 0.85rem;">
+                          <div><strong>Cultivo:</strong> ${p.cultivo || 'No registrado'}</div>
+                          <div><strong>Superficie:</strong> ${p.superficie_ha ? p.superficie_ha + ' Ha' : 'S/D'}</div>
+                        </div>
+                      </div>
+                    `;
+                    layer.bindPopup(popupHtml);
+
+                    layer.on({
+                      mouseover: function (e) {
+                        e.target.setStyle({ fillOpacity: 0.75, weight: 3.5 });
+                      },
+                      mouseout: function (e) {
+                        lotesLayer.resetStyle(e.target);
+                      }
+                    });
+                  }
+                }).addTo(map);
+
+                layerControl.addOverlay(lotesLayer, "🌾 Lotes Monitoreados");
+                map.fitBounds(lotesLayer.getBounds(), { padding: [40, 40] });
+              }
+            })
+            .catch(err => {
+              console.warn("Información de lotes GeoJSON:", err);
+            });
+        }
+        cargarLotes();
+
+        // 3. HERRAMIENTAS DE DIBUJO CON LEAFLET-GEOMAN
+        map.pm.addControls({
+          position: 'topleft',
+          drawPolygon: true,
+          drawMarker: false,
+          drawCircleMarker: false,
+          drawPolyline: false,
+          drawRectangle: true,
+          drawCircle: false,
+          drawText: false,
+          editMode: false,
+          dragMode: false,
+          cutPolygon: false,
+          removalMode: true
+        });
+        map.pm.setLang('es');
+
+        // Botón "Añadir Lote en Mapa" en la cabecera
+        const btnDibujar = document.getElementById('btnIniciarDibujo');
+        if (btnDibujar) {
+          btnDibujar.addEventListener('click', function () {
+            map.pm.enableDraw('Polygon', {
+              snappable: true,
+              snapDistance: 20
+            });
           });
+        }
+
+        // 4. CAPTURA DEL POLÍGONO DIBUJADO Y MODAL DE CONFIRMACIÓN
+        let capaTemporalDibujada = null;
+        let geometriaTemporal = null;
+        const modalEl = document.getElementById('modalNuevoLote');
+        const modalNuevoLote = new bootstrap.Modal(modalEl);
+
+        map.on('pm:create', function (e) {
+          capaTemporalDibujada = e.layer;
+          geometriaTemporal = e.layer.toGeoJSON().geometry;
+
+          // Limpiar inputs y alertas previas
+          document.getElementById('inputNombreLote').value = '';
+          document.getElementById('alertaErrorLote').classList.add('d-none');
+          document.getElementById('textoErrorLote').innerText = '';
+
+          // Abrir modal de datos
+          modalNuevoLote.show();
+        });
+
+        // Si descarta o cierra el modal sin guardar, eliminar el polígono temporal del mapa
+        function descartarPoligonoTemporal() {
+          if (capaTemporalDibujada) {
+            map.removeLayer(capaTemporalDibujada);
+            capaTemporalDibujada = null;
+            geometriaTemporal = null;
+          }
+        }
+        document.getElementById('btnDescartarDibujo').addEventListener('click', descartarPoligonoTemporal);
+        document.getElementById('btnCerrarModalLote').addEventListener('click', descartarPoligonoTemporal);
+
+        // Función para leer cookies de Django (CSRF)
+        function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+
+        // 5. GUARDAR LOTE EN POSTGIS MEDIANTE LA API
+        document.getElementById('btnConfirmarGuardarLote').addEventListener('click', function () {
+          const nombre = document.getElementById('inputNombreLote').value.trim();
+          const cultivo = document.getElementById('inputCultivoLote').value;
+          const alertaError = document.getElementById('alertaErrorLote');
+          const textoError = document.getElementById('textoErrorLote');
+          const spinner = document.getElementById('spinnerGuardarLote');
+          const btnGuardar = document.getElementById('btnConfirmarGuardarLote');
+
+          if (!nombre) {
+            textoError.innerText = "Por favor ingresa un nombre para el lote.";
+            alertaError.classList.remove('d-none');
+            return;
+          }
+
+          // Bloquear botón y mostrar spinner
+          spinner.classList.remove('d-none');
+          btnGuardar.setAttribute('disabled', 'true');
+          alertaError.classList.add('d-none');
+
+          fetch('/monitoring/api/crear-lote/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value
+            },
+            body: JSON.stringify({
+              nombre: nombre,
+              cultivo: cultivo,
+              geometry: geometriaTemporal
+            })
+          })
+          .then(async response => {
+            const data = await response.json();
+            if (!response.ok) {
+              throw new Error(data.error || "No se pudo registrar el lote");
+            }
+            return data;
+          })
+          .then(data => {
+            // Éxito: cerrar modal y recargar página para actualizar KPIs y tablas
+            modalNuevoLote.hide();
+            descartarPoligonoTemporal();
+            window.location.reload();
+          })
+          .catch(error => {
+            // Mostrar error (ej: si invade zona urbana)
+            textoError.innerText = error.message;
+            alertaError.classList.remove('d-none');
+          })
+          .finally(() => {
+            spinner.classList.add('d-none');
+            btnGuardar.removeAttribute('disabled');
+          });
+        });
       });
     </script>
     <script>
@@ -907,8 +1077,8 @@
       // ==========================================
       let touchStartX = 0;
       let touchEndX = 0;
-      const swipeThreshold = 60; // Distancia mínima que debe recorrer el dedo
-      const edgeThreshold = 30; // Rango en píxeles del borde izquierdo donde debe iniciar el gesto
+      const swipeThreshold = 60;
+      const edgeThreshold = 30;
 
       document.addEventListener("touchstart", (e) => {
         touchStartX = e.changedTouches[0].screenX;
@@ -916,22 +1086,76 @@
 
       document.addEventListener("touchend", (e) => {
         touchEndX = e.changedTouches[0].screenX;
-
-        // Solo evaluamos el deslizamiento en pantallas móviles
         if (window.innerWidth < 992) {
-          // Condición: El dedo debe empezar muy cerca del borde izquierdo Y deslizarse hacia la derecha
           if (
             touchStartX < edgeThreshold &&
             touchEndX - touchStartX > swipeThreshold
           ) {
-            // Llamamos a la API nativa de Bootstrap para mostrar el Offcanvas
             const sidebarOffcanvas = document.getElementById("sidebar");
-            const bsOffcanvas =
-              bootstrap.Offcanvas.getOrCreateInstance(sidebarOffcanvas);
+            const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(sidebarOffcanvas);
             bsOffcanvas.show();
           }
         }
       });
     </script>
+
+    <!-- CSRF TOKEN OCULTO -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+    <!-- MODAL CREACIÓN DE NUEVO LOTE -->
+    <div class="modal fade" id="modalNuevoLote" tabindex="-1" aria-labelledby="modalNuevoLoteLabel" aria-hidden="true" data-bs-backdrop="static">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+          <div class="modal-header border-bottom-0 pb-0">
+            <h5 class="modal-title fw-bold text-dark" id="modalNuevoLoteLabel">
+              <i class="bi bi-geo-alt-fill text-success me-2"></i>Registrar Nuevo Lote
+            </h5>
+            <button type="button" class="btn-close shadow-none" id="btnCerrarModalLote" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body pt-3">
+            <div id="alertaErrorLote" class="alert alert-danger d-none py-2 px-3 mb-3" style="font-size: 0.88rem;">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i> <span id="textoErrorLote"></span>
+            </div>
+
+            <p class="text-muted small mb-3">
+              Completa los datos del polígono delimitado. El sistema validará automáticamente en PostGIS que no invada zonas urbanas protegidas.
+            </p>
+
+            <form id="formNuevoLote" onsubmit="return false;">
+              <div class="mb-3">
+                <label for="inputNombreLote" class="form-label fw-semibold text-secondary small">Nombre del Lote / Parcela *</label>
+                <input type="text" class="form-control rounded-3 shadow-none" id="inputNombreLote" placeholder="Ej: Lote San Antonio Norte" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="inputCultivoLote" class="form-label fw-semibold text-secondary small">Cultivo Proyectado / Actual</label>
+                <select class="form-select rounded-3 shadow-none" id="inputCultivoLote">
+                  <option value="Arroz" selected>Arroz</option>
+                  <option value="Soja">Soja</option>
+                  <option value="Maíz">Maíz</option>
+                  <option value="Cítricos">Cítricos / Frutales</option>
+                  <option value="Tabaco / Hortícola">Tabaco / Hortícola</option>
+                  <option value="Forestal (Pino / Eucalipto)">Forestal (Pino / Eucalipto)</option>
+                  <option value="Ganadería / Pasturas">Ganadería / Pasturas</option>
+                  <option value="Otro">Otro cultivo</option>
+                </select>
+              </div>
+
+              <div class="p-2 bg-light rounded-3 d-flex align-items-center justify-content-between mb-1">
+                <span class="small text-muted"><i class="bi bi-shield-check text-success me-1"></i>SRID Estándar:</span>
+                <span class="badge bg-secondary-subtle text-dark">EPSG 4326 (WGS84)</span>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer border-top-0 pt-0">
+            <button type="button" class="btn btn-light rounded-3 px-3" id="btnDescartarDibujo" data-bs-dismiss="modal">Descartar</button>
+            <button type="button" class="btn btn-success rounded-3 px-4 d-flex align-items-center gap-2" id="btnConfirmarGuardarLote">
+              <span id="spinnerGuardarLote" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+              <span>Guardar en PostGIS</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

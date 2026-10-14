@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 
 # ==========================================
 # ENUMS / CHOICES
@@ -23,6 +24,25 @@ class BandaToxicologica(models.TextChoices):
 # ==========================================
 # 1. TABLAS DE DIMENSIONES (ABM Operativo)
 # ==========================================
+
+class ZonaUrbana(models.Model):
+    """
+    Capa de Exclusión Territorial: Representa el ejido urbano donde está
+    restringida o prohibida la actividad agropecuaria intensiva / pulverizaciones.
+    """
+    nombre = models.CharField(max_length=150, help_text="Ej: Ejido Urbano Mercedes")
+    departamento = models.CharField(max_length=100, blank=True, null=True, help_text="Ej: Mercedes, Goya, Capital")
+    geom = models.MultiPolygonField(srid=4326)
+    radio_buffer_metros = models.IntegerField(default=0, help_text="Metros de amortiguamiento periurbano")
+
+    class Meta:
+        verbose_name = "Zona Urbana / Exclusión"
+        verbose_name_plural = "Zonas Urbanas (Exclusiones)"
+        ordering = ['nombre']
+
+    def __str__(self):
+        return f"{self.nombre} ({self.departamento or 'Corrientes'})"
+
 
 class Lote(models.Model):
     """
@@ -50,6 +70,17 @@ class Lote(models.Model):
         verbose_name = "Lote"
         verbose_name_plural = "Lotes"
         ordering = ['-fecha_registro']
+
+    def clean(self):
+        super().clean()
+        if self.geom:
+            zonas_conflicto = ZonaUrbana.objects.filter(geom__intersects=self.geom)
+            if zonas_conflicto.exists():
+                nombres = ", ".join([z.nombre for z in zonas_conflicto])
+                raise ValidationError(
+                    f"Restricción Territorial: El lote intersecta con la zona urbana '{nombres}'. "
+                    f"No se permite delimitar lotes agrícolas dentro de ejidos urbanos."
+                )
 
     def __str__(self):
         return f"{self.nombre} ({self.productor.username})"
