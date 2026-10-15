@@ -12,9 +12,21 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Configuración automática de GDAL / GEOS para GeoDjango en Windows
+if os.name == 'nt':
+    VENV_BASE = Path(sys.prefix)
+    OSGEO_DIR = VENV_BASE / 'Lib' / 'site-packages' / 'osgeo'
+    if OSGEO_DIR.exists():
+        os.environ['PATH'] = str(OSGEO_DIR) + ';' + os.environ.get('PATH', '')
+        os.environ['PROJ_LIB'] = str(OSGEO_DIR / 'data' / 'proj')
+        os.environ['GDAL_DATA'] = str(OSGEO_DIR / 'data' / 'gdal')
+        GDAL_LIBRARY_PATH = str(OSGEO_DIR / 'gdal.dll')
+        GEOS_LIBRARY_PATH = str(OSGEO_DIR / 'geos_c.dll')
 
 
 # Quick-start development settings - unsuitable for production
@@ -38,7 +50,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'accounts',
+    'monitoring',
 ]
 
 MIDDLEWARE = [
@@ -76,12 +90,12 @@ WSGI_APPLICATION = 'iagrocorr_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'iagrocorr',
         'USER': 'admin_iagrocorr',
         'PASSWORD': 'i4Gr0coRr_dB',
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '5433',
     }
 }
 

@@ -19,8 +19,13 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css"
+    />
     <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
   </head>
   <body>
     {% include 'accounts/contact_alert.html' %}
@@ -132,15 +137,17 @@
               </p>
             </div>
             <button
-              class="btn btn-success d-flex align-items-center gap-2"
+              id="btnIniciarDibujo"
+              class="btn btn-success d-flex align-items-center gap-2 shadow-sm"
+              title="Haz clic para activar el dibujo de polígonos sobre el mapa"
               style="
                 background-color: var(--primary-green);
                 border: none;
                 border-radius: 8px;
               "
             >
-              <i class="bi bi-plus-circle"></i>
-              <span class="d-none d-sm-inline">Añadir Lote</span>
+              <i class="bi bi-pencil-square"></i>
+              <span class="d-none d-sm-inline">Añadir Lote en Mapa</span>
             </button>
           </div>
 
@@ -150,7 +157,8 @@
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
                     <div class="metric-title">Área Total Monitoreada</div>
-                    <div class="metric-value">1,245 Ha</div>
+                    <div class="metric-value">{{ total_hectareas|floatformat:1 }} Ha</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">{{ total_lotes }} lote{{ total_lotes|pluralize }} activo{{ total_lotes|pluralize }}</small>
                   </div>
                   <span class="badge bg-success-subtle text-success p-2 rounded"
                     ><i class="bi bi-globe fs-5"></i
@@ -163,7 +171,8 @@
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
                     <div class="metric-title">Humedad Promedio</div>
-                    <div class="metric-value">24.8 %</div>
+                    <div class="metric-value">{{ humedad_promedio }} %</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">Capa arable superficial</small>
                   </div>
                   <span class="badge bg-primary-subtle text-primary p-2 rounded"
                     ><i class="bi bi-droplet fs-5"></i
@@ -176,7 +185,8 @@
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
                     <div class="metric-title">Índice NDVI Promedio</div>
-                    <div class="metric-value">0.72</div>
+                    <div class="metric-value">{{ ndvi_promedio }}</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">Vigor Sentinel-2</small>
                   </div>
                   <span class="badge bg-warning-subtle text-warning p-2 rounded"
                     ><i class="bi bi-sun fs-5"></i
@@ -189,7 +199,8 @@
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
                     <div class="metric-title">Alertas Activas</div>
-                    <div class="metric-value">3 Globales</div>
+                    <div class="metric-value">{{ alertas_activas }}</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">Lote{{ alertas_activas|pluralize }} con advertencia</small>
                   </div>
                   <span class="badge bg-danger-subtle text-danger p-2 rounded"
                     ><i class="bi bi-exclamation-octagon fs-5"></i
@@ -201,18 +212,18 @@
 
           <div class="row g-4">
             <div class="col-12 col-lg-8">
-              <div class="map-container">
-                <iframe
-                  src="https://maps.google.com/maps?q=Provincia+de+Corrientes,+Argentina&t=k&z=7&ie=UTF8&iwloc=&output=embed"
-                  width="100%"
-                  height="100%"
-                  frameborder="0"
-                  style="border: 0"
-                  allowfullscreen=""
-                  aria-hidden="false"
-                  tabindex="0"
-                >
-                </iframe>
+              <div class="map-container position-relative">
+                <div id="mapaLotes" style="width: 100%; height: 100%; border-radius: 16px;"></div>
+                <div id="mapaLeyenda" class="position-absolute bottom-0 start-0 m-3 p-2 bg-white bg-opacity-90 rounded-3 shadow-sm border" style="z-index: 1000; font-size: 0.8rem;">
+                  <div class="fw-bold mb-1 text-dark"><i class="bi bi-shield-check text-success me-1"></i>Semáforo Espacial PostGIS</div>
+                  <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#198754; width:12px; height:12px; padding:0; border-radius:3px;"> </span> Óptimo (Score &lt; 40)</div>
+                  <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#ffc107; width:12px; height:12px; padding:0; border-radius:3px;"> </span> Precaución (Score 40-79)</div>
+                  <div class="d-flex align-items-center gap-2"><span class="badge" style="background:#dc3545; width:12px; height:12px; padding:0; border-radius:3px;"> </span> Riesgo Crítico (Score &ge; 80)</div>
+                  <hr class="my-1">
+                  <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.75rem;"><span style="border-bottom: 2px dashed #0dcaf0; width: 14px; display:inline-block;"></span> Reserva Esteros del Iberá</div>
+                  <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.75rem;"><span style="border-bottom: 2px solid #0d6efd; width: 14px; display:inline-block;"></span> Cursos de Agua / Ríos</div>
+                </div>
+
               </div>
             </div>
 
@@ -226,27 +237,31 @@
                   Lotes Recientes
                 </h6>
                 <ul class="list-unstyled mb-0" style="font-size: 0.9rem">
+                  {% for act in actividades_recientes %}
                   <li class="mb-3 pb-3 border-bottom">
-                    <span class="text-muted d-block" style="font-size: 0.75rem"
-                      >Hace 10 min</span
-                    >
-                    <strong>Lote Norte Alfa:</strong> Análisis NDVI actualizado
-                    con éxito desde Sentinel-2.
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="text-muted" style="font-size: 0.75rem">
+                        {{ act.fecha_captura|date:"d/m/Y" }}
+                      </span>
+                      {% if act.semaforo_resultado == 'VERDE' %}
+                        <span class="badge bg-success-subtle text-success py-1 px-2" style="font-size: 0.7rem;">Óptimo</span>
+                      {% elif act.semaforo_resultado == 'AMARILLO' %}
+                        <span class="badge bg-warning-subtle text-warning py-1 px-2" style="font-size: 0.7rem;">Precaución</span>
+                      {% else %}
+                        <span class="badge bg-danger-subtle text-danger py-1 px-2" style="font-size: 0.7rem;">Crítico</span>
+                      {% endif %}
+                    </div>
+                    <strong class="d-block text-dark mt-1">{{ act.lote.nombre }}</strong>
+                    <span class="text-secondary" style="font-size: 0.85rem;">
+                      NDVI: <strong>{{ act.ndvi_promedio|default:"-" }}</strong> | Humedad: <strong>{{ act.humedad_suelo_pct|default:"-" }}%</strong>
+                    </span>
                   </li>
-                  <li class="mb-3 pb-3 border-bottom">
-                    <span class="text-muted d-block" style="font-size: 0.75rem"
-                      >Hace 1 hora</span
-                    >
-                    <strong>Parcela Sur 04:</strong> Sensor de suelo reportó
-                    caída de humedad por debajo del 10%.
+                  {% empty %}
+                  <li class="text-muted text-center py-4">
+                    <i class="bi bi-clock-history fs-4 d-block mb-1 text-secondary"></i>
+                    Sin mediciones recientes registradas.
                   </li>
-                  <li class="mb-0">
-                    <span class="text-muted d-block" style="font-size: 0.75rem"
-                      >Ayer</span
-                    >
-                    <strong>Lote Central Maíz:</strong> Alta de geolocalización
-                    registrada correctamente en PostgreSQL.
-                  </li>
+                  {% endfor %}
                 </ul>
               </div>
             </div>
@@ -783,6 +798,9 @@
         if (vista === "panel") {
           vistaPanel.classList.remove("d-none");
           btnPanel.classList.add("active");
+          if (window.mapaLotes) {
+            setTimeout(() => { window.mapaLotes.invalidateSize(); }, 200);
+          }
         } else if (vista === "ambiental") {
           vistaAmbiental.classList.remove("d-none");
           btnAmbiental.classList.add("active");
@@ -797,12 +815,356 @@
     </script>
     <script>
       // ==========================================
+      // INICIALIZACIÓN DEL MAPA GIS DE LOTES
+      // ==========================================
+      document.addEventListener("DOMContentLoaded", function () {
+        const centroCorrientes = [-28.70, -58.00];
+        const map = L.map('mapaLotes', {
+          zoomControl: true,
+          scrollWheelZoom: true
+        }).setView(centroCorrientes, 7);
+        window.mapaLotes = map;
+
+        // Capa Satelital (Esri World Imagery)
+        const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+          maxZoom: 18
+        });
+
+        // Capa de Calles (OpenStreetMap)
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors',
+          maxZoom: 19
+        });
+
+        // Capa de Etiquetas y Límites
+        const esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '&copy; Esri',
+          maxZoom: 18
+        });
+
+        // Grupo Híbrido (Satélite + Nombres)
+        const sateliteHibrido = L.layerGroup([esriSatellite, esriLabels]);
+        sateliteHibrido.addTo(map);
+
+        // Selector de capas
+        const baseMaps = {
+          "Satelital Híbrido": sateliteHibrido,
+          "Mapa Calles (OSM)": osm
+        };
+        const overlayMaps = {};
+        const layerControl = L.control.layers(baseMaps, overlayMaps, { position: 'topright' }).addTo(map);
+
+        // 1. CARGAR CAPA DE ZONAS URBANAS (EXCLUSIÓN)
+        fetch('/monitoring/api/zonas-urbanas-geojson/')
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.features && data.features.length > 0) {
+              const urbanLayer = L.geoJSON(data, {
+                style: {
+                  color: '#dc3545',
+                  fillColor: '#6c757d',
+                  fillOpacity: 0.35,
+                  weight: 2,
+                  dashArray: '5, 5'
+                },
+                onEachFeature: function (feature, layer) {
+                  const p = feature.properties;
+                  layer.bindTooltip(
+                    `🚫 <strong>${p.nombre}</strong><br><span class="text-danger small">Zona Urbana - Exclusión de Lotes (${p.buffer_m}m)</span>`,
+                    { sticky: true }
+                  );
+                }
+              }).addTo(map);
+              layerControl.addOverlay(urbanLayer, "🚫 Zonas Urbanas (Exclusiones)");
+            }
+          })
+          .catch(err => console.warn("Aviso al cargar zonas urbanas:", err));
+
+        // 1.1 CARGAR CAPAS AMBIENTALES PROTEGIDAS (Esteros del Iberá y Red Fluvial)
+        fetch('/monitoring/api/capas-ambientales-geojson/')
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.features && data.features.length > 0) {
+              // Capa Esteros del Iberá
+              const iberaFeatures = data.features.filter(f => f.properties.tipo_capa === 'area_protegida');
+              if (iberaFeatures.length > 0) {
+                const iberaLayer = L.geoJSON({ type: "FeatureCollection", features: iberaFeatures }, {
+                  style: {
+                    color: '#055160',
+                    fillColor: '#0dcaf0',
+                    fillOpacity: 0.22,
+                    weight: 2.5,
+                    dashArray: '6, 6'
+                  },
+                  onEachFeature: function (feature, layer) {
+                    const p = feature.properties;
+                    layer.bindTooltip(
+                      `🌿 <strong>${p.nombre}</strong><br><span class="text-info small">${p.categoria} (Buffer ${p.buffer_m}m)</span>`,
+                      { sticky: true }
+                    );
+                  }
+                }).addTo(map);
+                layerControl.addOverlay(iberaLayer, "🌿 Reserva Esteros del Iberá");
+              }
+
+              // Capa Cursos de Agua y Ríos
+              const aguasFeatures = data.features.filter(f => f.properties.tipo_capa === 'cuerpo_agua');
+              if (aguasFeatures.length > 0) {
+                const aguasLayer = L.geoJSON({ type: "FeatureCollection", features: aguasFeatures }, {
+                  style: function (f) {
+                    const isPolygon = f.geometry.type.includes('Polygon');
+                    return {
+                      color: '#0d6efd',
+                      fillColor: '#0d6efd',
+                      fillOpacity: isPolygon ? 0.35 : 0,
+                      weight: isPolygon ? 1.5 : 3.5,
+                      opacity: 0.85
+                    };
+                  },
+                  onEachFeature: function (feature, layer) {
+                    const p = feature.properties;
+                    layer.bindTooltip(
+                      `💧 <strong>${p.nombre}</strong><br><span class="text-primary small">${p.tipo} - Amortiguamiento ${p.buffer_m}m</span>`,
+                      { sticky: true }
+                    );
+                  }
+                }).addTo(map);
+                layerControl.addOverlay(aguasLayer, "💧 Cursos de Agua y Ríos");
+              }
+            }
+          })
+          .catch(err => console.warn("Aviso al cargar capas ambientales:", err));
+
+        // 2. CARGAR LOTES GEOJSON EXISTENTES CON REGLAS ESPACIALES
+        let lotesLayer = null;
+        function cargarLotes() {
+          fetch('/monitoring/api/lotes-geojson/')
+            .then(res => {
+              if (!res.ok) throw new Error("Respuesta no OK de la API");
+              return res.json();
+            })
+            .then(data => {
+              if (data && data.features && data.features.length > 0) {
+                if (lotesLayer) map.removeLayer(lotesLayer);
+                lotesLayer = L.geoJSON(data, {
+                  style: function (feature) {
+                    const riesgo = feature.properties.riesgo;
+                    let color = '#198754';
+                    if (riesgo === 'AMARILLO') color = '#ffc107';
+                    else if (riesgo === 'ROJO') color = '#dc3545';
+                    return {
+                      color: color,
+                      fillColor: color,
+                      fillOpacity: 0.45,
+                      weight: 2.5
+                    };
+                  },
+                  onEachFeature: function (feature, layer) {
+                    const p = feature.properties;
+                    const badgeClass = p.riesgo === 'VERDE' ? 'bg-success' : (p.riesgo === 'AMARILLO' ? 'bg-warning text-dark' : 'bg-danger');
+                    
+                    const formatDist = (d) => {
+                      if (d === null || d === undefined) return 'S/D';
+                      return d >= 1000 ? (d / 1000).toFixed(1) + ' km' : d.toFixed(0) + ' m';
+                    };
+
+                    let alertasHtml = '';
+                    if (p.alertas && p.alertas.length > 0) {
+                      alertasHtml = `
+                        <div class="alert alert-danger p-1 mt-2 mb-0" style="font-size: 0.73rem;">
+                          <i class="bi bi-exclamation-triangle-fill me-1"></i> ${p.alertas[0]}
+                        </div>
+                      `;
+                    } else {
+                      alertasHtml = `
+                        <div class="badge bg-success-subtle text-success mt-2 py-1 px-2 w-100 text-start" style="font-size: 0.72rem;">
+                          <i class="bi bi-shield-check me-1"></i> Amortiguamientos conformes a norma
+                        </div>
+                      `;
+                    }
+
+                    const popupHtml = `
+                      <div style="min-width: 240px; font-family: system-ui, sans-serif;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                          <strong class="text-dark fs-6">${p.nombre}</strong>
+                          <span class="badge ${badgeClass}">${p.riesgo} (${p.score_riesgo || 10}/100)</span>
+                        </div>
+                        <hr class="my-1 border-secondary">
+                        <div class="text-muted" style="font-size: 0.82rem;">
+                          <div><strong>Cultivo:</strong> ${p.cultivo || 'No registrado'}</div>
+                          <div><strong>Superficie:</strong> ${p.superficie_ha ? p.superficie_ha + ' Ha' : 'S/D'}</div>
+                          <div class="mt-1 pt-1 border-top">
+                            <div><i class="bi bi-water text-primary me-1"></i><strong>Cuerpo de Agua:</strong> ${formatDist(p.distancia_agua_m)}</div>
+                            <div><i class="bi bi-tree text-success me-1"></i><strong>Esteros del Iberá:</strong> ${formatDist(p.distancia_reserva_m)}</div>
+                          </div>
+                          ${alertasHtml}
+                        </div>
+                      </div>
+                    `;
+                    layer.bindPopup(popupHtml);
+
+                    layer.on({
+                      mouseover: function (e) {
+                        e.target.setStyle({ fillOpacity: 0.75, weight: 3.5 });
+                      },
+                      mouseout: function (e) {
+                        lotesLayer.resetStyle(e.target);
+                      }
+                    });
+                  }
+                }).addTo(map);
+
+                layerControl.addOverlay(lotesLayer, "🌾 Lotes Monitoreados");
+                map.fitBounds(lotesLayer.getBounds(), { padding: [40, 40] });
+              }
+            })
+            .catch(err => {
+              console.warn("Información de lotes GeoJSON:", err);
+            });
+        }
+        cargarLotes();
+
+
+        // 3. HERRAMIENTAS DE DIBUJO CON LEAFLET-GEOMAN
+        map.pm.addControls({
+          position: 'topleft',
+          drawPolygon: true,
+          drawMarker: false,
+          drawCircleMarker: false,
+          drawPolyline: false,
+          drawRectangle: true,
+          drawCircle: false,
+          drawText: false,
+          editMode: false,
+          dragMode: false,
+          cutPolygon: false,
+          removalMode: true
+        });
+        map.pm.setLang('es');
+
+        // Botón "Añadir Lote en Mapa" en la cabecera
+        const btnDibujar = document.getElementById('btnIniciarDibujo');
+        if (btnDibujar) {
+          btnDibujar.addEventListener('click', function () {
+            map.pm.enableDraw('Polygon', {
+              snappable: true,
+              snapDistance: 20
+            });
+          });
+        }
+
+        // 4. CAPTURA DEL POLÍGONO DIBUJADO Y MODAL DE CONFIRMACIÓN
+        let capaTemporalDibujada = null;
+        let geometriaTemporal = null;
+        const modalEl = document.getElementById('modalNuevoLote');
+        const modalNuevoLote = new bootstrap.Modal(modalEl);
+
+        map.on('pm:create', function (e) {
+          capaTemporalDibujada = e.layer;
+          geometriaTemporal = e.layer.toGeoJSON().geometry;
+
+          // Limpiar inputs y alertas previas
+          document.getElementById('inputNombreLote').value = '';
+          document.getElementById('alertaErrorLote').classList.add('d-none');
+          document.getElementById('textoErrorLote').innerText = '';
+
+          // Abrir modal de datos
+          modalNuevoLote.show();
+        });
+
+        // Si descarta o cierra el modal sin guardar, eliminar el polígono temporal del mapa
+        function descartarPoligonoTemporal() {
+          if (capaTemporalDibujada) {
+            map.removeLayer(capaTemporalDibujada);
+            capaTemporalDibujada = null;
+            geometriaTemporal = null;
+          }
+        }
+        document.getElementById('btnDescartarDibujo').addEventListener('click', descartarPoligonoTemporal);
+        document.getElementById('btnCerrarModalLote').addEventListener('click', descartarPoligonoTemporal);
+
+        // Función para leer cookies de Django (CSRF)
+        function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+
+        // 5. GUARDAR LOTE EN POSTGIS MEDIANTE LA API
+        document.getElementById('btnConfirmarGuardarLote').addEventListener('click', function () {
+          const nombre = document.getElementById('inputNombreLote').value.trim();
+          const cultivo = document.getElementById('inputCultivoLote').value;
+          const alertaError = document.getElementById('alertaErrorLote');
+          const textoError = document.getElementById('textoErrorLote');
+          const spinner = document.getElementById('spinnerGuardarLote');
+          const btnGuardar = document.getElementById('btnConfirmarGuardarLote');
+
+          if (!nombre) {
+            textoError.innerText = "Por favor ingresa un nombre para el lote.";
+            alertaError.classList.remove('d-none');
+            return;
+          }
+
+          // Bloquear botón y mostrar spinner
+          spinner.classList.remove('d-none');
+          btnGuardar.setAttribute('disabled', 'true');
+          alertaError.classList.add('d-none');
+
+          fetch('/monitoring/api/crear-lote/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value
+            },
+            body: JSON.stringify({
+              nombre: nombre,
+              cultivo: cultivo,
+              geometry: geometriaTemporal
+            })
+          })
+          .then(async response => {
+            const data = await response.json();
+            if (!response.ok) {
+              throw new Error(data.error || "No se pudo registrar el lote");
+            }
+            return data;
+          })
+          .then(data => {
+            // Éxito: cerrar modal y recargar página para actualizar KPIs y tablas
+            modalNuevoLote.hide();
+            descartarPoligonoTemporal();
+            window.location.reload();
+          })
+          .catch(error => {
+            // Mostrar error (ej: si invade zona urbana)
+            textoError.innerText = error.message;
+            alertaError.classList.remove('d-none');
+          })
+          .finally(() => {
+            spinner.classList.add('d-none');
+            btnGuardar.removeAttribute('disabled');
+          });
+        });
+      });
+    </script>
+    <script>
+      // ==========================================
       // LÓGICA DE DESLIZAMIENTO (SWIPE) PARA MÓVILES
       // ==========================================
       let touchStartX = 0;
       let touchEndX = 0;
-      const swipeThreshold = 60; // Distancia mínima que debe recorrer el dedo
-      const edgeThreshold = 30; // Rango en píxeles del borde izquierdo donde debe iniciar el gesto
+      const swipeThreshold = 60;
+      const edgeThreshold = 30;
 
       document.addEventListener("touchstart", (e) => {
         touchStartX = e.changedTouches[0].screenX;
@@ -810,22 +1172,76 @@
 
       document.addEventListener("touchend", (e) => {
         touchEndX = e.changedTouches[0].screenX;
-
-        // Solo evaluamos el deslizamiento en pantallas móviles
         if (window.innerWidth < 992) {
-          // Condición: El dedo debe empezar muy cerca del borde izquierdo Y deslizarse hacia la derecha
           if (
             touchStartX < edgeThreshold &&
             touchEndX - touchStartX > swipeThreshold
           ) {
-            // Llamamos a la API nativa de Bootstrap para mostrar el Offcanvas
             const sidebarOffcanvas = document.getElementById("sidebar");
-            const bsOffcanvas =
-              bootstrap.Offcanvas.getOrCreateInstance(sidebarOffcanvas);
+            const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(sidebarOffcanvas);
             bsOffcanvas.show();
           }
         }
       });
     </script>
+
+    <!-- CSRF TOKEN OCULTO -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+    <!-- MODAL CREACIÓN DE NUEVO LOTE -->
+    <div class="modal fade" id="modalNuevoLote" tabindex="-1" aria-labelledby="modalNuevoLoteLabel" aria-hidden="true" data-bs-backdrop="static">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+          <div class="modal-header border-bottom-0 pb-0">
+            <h5 class="modal-title fw-bold text-dark" id="modalNuevoLoteLabel">
+              <i class="bi bi-geo-alt-fill text-success me-2"></i>Registrar Nuevo Lote
+            </h5>
+            <button type="button" class="btn-close shadow-none" id="btnCerrarModalLote" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body pt-3">
+            <div id="alertaErrorLote" class="alert alert-danger d-none py-2 px-3 mb-3" style="font-size: 0.88rem;">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i> <span id="textoErrorLote"></span>
+            </div>
+
+            <p class="text-muted small mb-3">
+              Completa los datos del polígono delimitado. El sistema validará automáticamente en PostGIS que no invada zonas urbanas protegidas.
+            </p>
+
+            <form id="formNuevoLote" onsubmit="return false;">
+              <div class="mb-3">
+                <label for="inputNombreLote" class="form-label fw-semibold text-secondary small">Nombre del Lote / Parcela *</label>
+                <input type="text" class="form-control rounded-3 shadow-none" id="inputNombreLote" placeholder="Ej: Lote San Antonio Norte" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="inputCultivoLote" class="form-label fw-semibold text-secondary small">Cultivo Proyectado / Actual</label>
+                <select class="form-select rounded-3 shadow-none" id="inputCultivoLote">
+                  <option value="Arroz" selected>Arroz</option>
+                  <option value="Soja">Soja</option>
+                  <option value="Maíz">Maíz</option>
+                  <option value="Cítricos">Cítricos / Frutales</option>
+                  <option value="Tabaco / Hortícola">Tabaco / Hortícola</option>
+                  <option value="Forestal (Pino / Eucalipto)">Forestal (Pino / Eucalipto)</option>
+                  <option value="Ganadería / Pasturas">Ganadería / Pasturas</option>
+                  <option value="Otro">Otro cultivo</option>
+                </select>
+              </div>
+
+              <div class="p-2 bg-light rounded-3 d-flex align-items-center justify-content-between mb-1">
+                <span class="small text-muted"><i class="bi bi-shield-check text-success me-1"></i>SRID Estándar:</span>
+                <span class="badge bg-secondary-subtle text-dark">EPSG 4326 (WGS84)</span>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer border-top-0 pt-0">
+            <button type="button" class="btn btn-light rounded-3 px-3" id="btnDescartarDibujo" data-bs-dismiss="modal">Descartar</button>
+            <button type="button" class="btn btn-success rounded-3 px-4 d-flex align-items-center gap-2" id="btnConfirmarGuardarLote">
+              <span id="spinnerGuardarLote" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+              <span>Guardar en PostGIS</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

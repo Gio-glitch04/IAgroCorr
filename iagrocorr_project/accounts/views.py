@@ -8,6 +8,9 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
+import json
+from django.db.models import Sum, Avg, Q
+from monitoring.models import Lote, HechoMedicionAmbiental, NivelRiesgo, GemeloGlobal
 
 @never_cache
 def login_view(request):
@@ -105,7 +108,41 @@ def register_view(request):
 
 @login_required
 def dashboard_view(request):
-    return render(request, 'accounts/dashboard.html')
+    if request.user.is_superuser:
+        lotes = Lote.objects.filter(activo=True)
+    else:
+        lotes = Lote.objects.filter(productor=request.user, activo=True)
+
+    # 1. Total Hectáreas monitoreadas
+    total_ha_result = lotes.aggregate(total=Sum('superficie_ha'))['total']
+    total_hectareas = float(total_ha_result) if total_ha_result is not None else 0.0
+
+    # 2. Alertas Activas (Lotes en riesgo Amarillo o Rojo)
+    alertas_activas = lotes.filter(
+        Q(riesgo_actual=NivelRiesgo.AMARILLO) | Q(riesgo_actual=NivelRiesgo.ROJO)
+    ).count()
+
+    # 3. Métricas ambientales del Data Warehouse
+    mediciones = HechoMedicionAmbiental.objects.filter(lote__in=lotes)
+    promedios = mediciones.aggregate(
+        avg_ndvi=Avg('ndvi_promedio'),
+        avg_humedad=Avg('humedad_suelo_pct')
+    )
+    ndvi_promedio = round(promedios['avg_ndvi'], 2) if promedios['avg_ndvi'] is not None else 0.00
+    humedad_promedio = round(promedios['avg_humedad'], 1) if promedios['avg_humedad'] is not None else 0.0
+
+    # 4. Actividad reciente de lotes (últimos hechos del DW)
+    actividades_recientes = mediciones.select_related('lote').order_by('-fecha_procesamiento')[:5]
+
+    context = {
+        'total_hectareas': total_hectareas,
+        'humedad_promedio': humedad_promedio,
+        'ndvi_promedio': ndvi_promedio,
+        'alertas_activas': alertas_activas,
+        'total_lotes': lotes.count(),
+        'actividades_recientes': actividades_recientes,
+    }
+    return render(request, 'accounts/dashboard.html', context)
 
 # FUNCIONALIDAD: Destruye la sesión de usuario
 def logout_view(request):
@@ -123,4 +160,25 @@ def demo_view(request):
 
 @login_required
 def global_twins_view(request):
-    return render(request, 'accounts/global-twins.html')
+    gemelos = GemeloGlobal.objects.filter(activo=True).order_by('orden', '-similitud_pct')
+    gemelos_list = []
+    for g in gemelos:
+        gemelos_list.append({
+            "id": g.id,
+            "nombre": g.nombre,
+            "pais": g.pais,
+            "lat": g.geom.y,
+            "lng": g.geom.x,
+            "sim": g.similitud_pct,
+            "hum": g.humedad_anual_pct,
+            "ndviMin": g.ndvi_min,
+            "ndviMax": g.ndvi_max,
+            "ndviText": g.ndvi_rango_texto,
+            "ndviVal": g.ndvi_val_pct,
+            "cultivos": g.cultivos_principales,
+            "descripcion": g.descripcion_climatica,
+        })
+    return render(request, 'accounts/global-twins.html', {
+        'gemelos_json': json.dumps(gemelos_list),
+        'gemelos_count': len(gemelos_list)
+    })
