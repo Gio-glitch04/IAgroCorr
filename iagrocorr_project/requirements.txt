@@ -1,0 +1,21 @@
+# ========================================================
+# IAgroCorr - Requisitos de Dependencias Python
+# Plataforma AgTech & Territorial GeoBI
+# ========================================================
+
+# Indice auxiliar para wheels binarios de GDAL en Windows
+--extra-index-url https://gisidx.github.io/gwi
+
+# Core Framework
+Django==6.1.2
+asgiref==3.12.1
+sqlparse==0.6.0
+tzdata==2026.5
+packaging==26.3
+wheel==0.48.0
+
+# Conector de Base de Datos PostgreSQL / PostGIS
+psycopg2-binary==2.9.13
+
+# Libreria Geoespacial (GeoDjango / PostGIS)
+GDAL==3.13.3
