@@ -17,16 +17,44 @@ import sys
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Configuración automática de GDAL / GEOS para GeoDjango en Windows
+# Configuración automática de GDAL / GEOS para GeoDjango en Windows.
+# Busca las DLL que trae el paquete pip "GDAL" (carpeta osgeo) en el
+# entorno activo (venv o Python global) y en el site-packages del usuario.
+# También se puede forzar la ruta con las variables de entorno
+# GDAL_LIBRARY_PATH y GEOS_LIBRARY_PATH.
 if os.name == 'nt':
-    VENV_BASE = Path(sys.prefix)
-    OSGEO_DIR = VENV_BASE / 'Lib' / 'site-packages' / 'osgeo'
-    if OSGEO_DIR.exists():
+    import site
+
+    def _buscar_osgeo():
+        candidatos = [Path(sys.prefix) / 'Lib' / 'site-packages']
+        try:
+            candidatos += [Path(p) for p in site.getsitepackages()]
+            candidatos.append(Path(site.getusersitepackages()))
+        except AttributeError:
+            pass
+        for carpeta in candidatos:
+            osgeo = carpeta / 'osgeo'
+            if osgeo.is_dir():
+                return osgeo
+        return None
+
+    OSGEO_DIR = _buscar_osgeo()
+    if OSGEO_DIR is not None:
         os.environ['PATH'] = str(OSGEO_DIR) + ';' + os.environ.get('PATH', '')
-        os.environ['PROJ_LIB'] = str(OSGEO_DIR / 'data' / 'proj')
-        os.environ['GDAL_DATA'] = str(OSGEO_DIR / 'data' / 'gdal')
-        GDAL_LIBRARY_PATH = str(OSGEO_DIR / 'gdal.dll')
-        GEOS_LIBRARY_PATH = str(OSGEO_DIR / 'geos_c.dll')
+        if hasattr(os, 'add_dll_directory'):
+            os.add_dll_directory(str(OSGEO_DIR))
+        os.environ.setdefault('PROJ_LIB', str(OSGEO_DIR / 'data' / 'proj'))
+        os.environ.setdefault('GDAL_DATA', str(OSGEO_DIR / 'data' / 'gdal'))
+        # Según la versión del paquete la DLL se llama gdal.dll o gdal3XX.dll
+        _gdal = sorted(OSGEO_DIR.glob('gdal*.dll'), reverse=True)
+        _gdal = [d for d in _gdal if d.stem == 'gdal' or d.stem[4:].isdigit()]
+        if _gdal:
+            GDAL_LIBRARY_PATH = str(_gdal[0])
+        if (OSGEO_DIR / 'geos_c.dll').exists():
+            GEOS_LIBRARY_PATH = str(OSGEO_DIR / 'geos_c.dll')
+
+    GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH', globals().get('GDAL_LIBRARY_PATH'))
+    GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH', globals().get('GEOS_LIBRARY_PATH'))
 
 
 # Quick-start development settings - unsuitable for production
