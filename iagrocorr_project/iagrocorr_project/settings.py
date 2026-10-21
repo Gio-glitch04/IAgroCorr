@@ -61,10 +61,10 @@ if os.name == 'nt':
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3+$bt%o&wl5bn+r9kp^f^$#l77n+semjg09%=b5e@$_le$%1=@'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or 'django-insecure-3+$bt%o&wl5bn+r9kp^f^$#l77n+semjg09%=b5e@$_le$%1=@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('1', 'true', 'yes')
 
 ALLOWED_HOSTS = ['*']
 
@@ -119,11 +119,13 @@ WSGI_APPLICATION = 'iagrocorr_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'iagrocorr',
-        'USER': 'admin_iagrocorr',
-        'PASSWORD': 'i4Gr0coRr_dB',
-        'HOST': 'localhost',
-        'PORT': '5433',
+        # Por defecto apunta al PostGIS de Docker desde Windows (localhost:5433).
+        # Dentro de Docker, docker-compose define DB_HOST=db y DB_PORT=5432.
+        'NAME': os.environ.get('DB_NAME', 'iagrocorr'),
+        'USER': os.environ.get('DB_USER', 'admin_iagrocorr'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'i4Gr0coRr_dB'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5433'),
     }
 }
 
