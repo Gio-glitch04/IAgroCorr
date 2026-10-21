@@ -1,0 +1,8 @@
+# Ajustes del servicio web solo para el Dev Container de VS Code.
+services:
+  web:
+    volumes:
+      - ..:/workspace:cached
+    working_dir: /workspace/iagrocorr_project
+    # El contenedor queda encendido; el servidor se inicia desde la terminal o el debugger
+    command: sleep infinity

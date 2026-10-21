@@ -18,4 +18,5 @@ wheel==0.48.0
 psycopg2-binary==2.9.13
 
 # Libreria Geoespacial (GeoDjango / PostGIS)
-GDAL==3.13.3
+# En Docker/Linux GDAL se instala con apt (ver Dockerfile), no con pip
+GDAL==3.13.3; sys_platform == "win32"
