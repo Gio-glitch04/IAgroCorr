@@ -39,7 +39,29 @@ Para clonar el proyecto, configurar Docker con PostGIS e instalar las dependenci
 
 👉 **[GUIA_INSTALACION.md](GUIA_INSTALACION.md)**
 
-### Inicio Rapido:
+### Inicio Rapido con Docker (recomendado)
+
+Solo necesitas **Docker Desktop**. La app Django y PostGIS corren en contenedores, sin instalar Python ni GDAL en tu PC.
+
+```bash
+cp .env.example .env          # opcional: ajustar claves y puertos
+docker compose up -d --build  # levanta base de datos + app
+docker compose exec web python manage.py poblar_lotes_demo   # datos demo (primera vez)
+docker compose exec web python manage.py createsuperuser
+```
+
+Abre [http://localhost:8000/dashboard/](http://localhost:8000/dashboard/). El codigo de `iagrocorr_project/` se monta en vivo, asi que los cambios se ven al guardar.
+
+Comandos utiles: `docker compose logs -f web`, `docker compose exec web python manage.py <comando>`, `docker compose down` (los datos quedan en el volumen `iagrocorr_data`).
+
+### Desarrollo con VS Code (Dev Container)
+
+1. Instala la extension **Dev Containers** en VS Code.
+2. Abre la carpeta del repo y elige **"Reopen in Container"**.
+3. VS Code se conecta al contenedor `web` con Python, Django y GDAL listos; Git y GitHub funcionan desde ahi.
+4. Inicia el servidor con `python manage.py runserver 0.0.0.0:8000` en la terminal o con **F5** (configuracion "Django: runserver").
+
+### Inicio Rapido local en Windows (sin Docker para la app):
 ```powershell
 # 1. Iniciar PostGIS en Docker
 docker compose up -d

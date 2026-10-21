@@ -1,18 +1,48 @@
-version: '3.8'
-
+# ========================================================
+# IAgroCorr - Entorno completo: base PostGIS + app Django
+#   docker compose up -d --build   -> levanta todo
+#   http://localhost:8000/dashboard/
+# ========================================================
 services:
   db:
     image: postgis/postgis:16-3.4
     container_name: iagrocorr_db_postgis
     restart: always
     environment:
-      POSTGRES_USER: admin_iagrocorr
-      POSTGRES_PASSWORD: i4Gr0coRr_dB
-      POSTGRES_DB: iagrocorr
+      POSTGRES_USER: ${POSTGRES_USER:-admin_iagrocorr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-i4Gr0coRr_dB}
+      POSTGRES_DB: ${POSTGRES_DB:-iagrocorr}
     ports:
-      - "5433:5432"
+      - "${DB_PORT_HOST:-5433}:5432"
     volumes:
       - iagrocorr_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    image: iagrocorr_web
+    container_name: iagrocorr_web
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB:-iagrocorr}
+      DB_USER: ${POSTGRES_USER:-admin_iagrocorr}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-i4Gr0coRr_dB}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-}
+    ports:
+      - "${WEB_PORT_HOST:-8000}:8000"
+    volumes:
+      # El codigo se monta en vivo: los cambios se ven sin reconstruir la imagen
+      - ./iagrocorr_project:/app
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   iagrocorr_data:

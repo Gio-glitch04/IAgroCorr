@@ -1,0 +1,12 @@
+.git
+.devcontainer
+.vscode
+venv/
+env/
+**/__pycache__
+**/*.pyc
+.env
+*.patch
+patches/
+iagrocorr_data/
+iagrocorr_project/staticfiles/
