@@ -1,12 +1,27 @@
 {
   "name": "IAgroCorr (Django + PostGIS)",
-  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.devcontainer.yml"],
+  "dockerComposeFile": [
+    "../docker-compose.yml",
+    "docker-compose.devcontainer.yml"
+  ],
   "service": "web",
-  "runServices": ["db", "web"],
+  "runServices": [
+    "db",
+    "web"
+  ],
   "workspaceFolder": "/workspace",
   "shutdownAction": "stopCompose",
-  "forwardPorts": [8000],
-  "postCreateCommand": "cd iagrocorr_project && python manage.py migrate --noinput",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "forwardPorts": [
+    8001
+  ],
+  "portsAttributes": {
+    "8001": {
+      "label": "Django (debug)"
+    }
+  },
   "customizations": {
     "vscode": {
       "extensions": [
@@ -14,8 +29,8 @@
         "ms-python.debugpy",
         "ms-python.vscode-pylance",
         "batisteo.vscode-django",
-        "ms-azuretools.vscode-docker",
-        "GitHub.vscode-pull-request-github"
+        "GitHub.vscode-pull-request-github",
+        "ms-azuretools.vscode-containers"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python"
