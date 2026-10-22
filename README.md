@@ -59,7 +59,9 @@ Comandos utiles: `docker compose logs -f web`, `docker compose exec web python m
 1. Instala la extension **Dev Containers** en VS Code.
 2. Abre la carpeta del repo y elige **"Reopen in Container"**.
 3. VS Code se conecta al contenedor `web` con Python, Django y GDAL listos; Git y GitHub funcionan desde ahi.
-4. Inicia el servidor con `python manage.py runserver 0.0.0.0:8000` en la terminal o con **F5** (configuracion "Django: runserver").
+4. El servidor arranca solo en [http://localhost:8000](http://localhost:8000) y se recarga al guardar.
+5. Para depurar con breakpoints usa **F5** ("Django: debug"), que levanta una segunda instancia en el puerto 8001.
+6. Desde la terminal del contenedor tambien funciona `docker` y la vista de contenedores de VS Code.
 
 ### Inicio Rapido local en Windows (sin Docker para la app):
 ```powershell
