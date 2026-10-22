@@ -3,6 +3,8 @@
 #   docker compose up -d --build   -> levanta todo
 #   http://localhost:8000/dashboard/
 # ========================================================
+name: iagrocorr
+
 services:
   db:
     image: postgis/postgis:16-3.4
