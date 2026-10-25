@@ -14,7 +14,8 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
     />
-    <link rel="stylesheet" href="{% static 'css/styles2.css' %}?v=1.6" />
+    {% include 'accounts/theme_init.html' %}
+    <link rel="stylesheet" href="{% static 'css/styles2.css' %}?v=1.7" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -33,13 +34,13 @@
 
     <div class="main-wrapper">
       <aside
-        class="sidebar-custom offcanvas-lg offcanvas-start bg-white"
+        class="sidebar-custom sidebar-collapsed offcanvas-lg offcanvas-start"
         tabindex="-1"
         id="sidebar"
         aria-labelledby="sidebarLabel"
       >
         <div class="offcanvas-header border-bottom d-lg-none">
-          <h5 class="offcanvas-title fw-bold" id="sidebarLabel" style="color: var(--primary-green)">
+          <h5 class="offcanvas-title fw-bold sidebar-brand" id="sidebarLabel">
             IAgroCorr
           </h5>
           <button
@@ -111,8 +112,9 @@
               id="sidebarToggle"
               type="button"
               class="sidebar-toggle"
-              title="Contraer menú"
+              title="Expandir menú"
               aria-label="Contraer o expandir el menú"
+              aria-expanded="false"
             >
               <i class="bi bi-chevron-double-left"></i>
               <span class="sidebar-text">Contraer menú</span>
@@ -120,6 +122,20 @@
           </div>
         </div>
       </aside>
+      <script>
+        // En pantallas grandes la barra arranca contraída; si el usuario la
+        // expandió antes, se respeta su elección.
+        (function () {
+          let estado = null;
+          try { estado = localStorage.getItem("iagrocorr-barra-lateral"); } catch (e) {}
+          if (estado === "expandida") {
+            document.getElementById("sidebar").classList.remove("sidebar-collapsed");
+            const btn = document.getElementById("sidebarToggle");
+            btn.title = "Contraer menú";
+            btn.setAttribute("aria-expanded", "true");
+          }
+        })();
+      </script>
 
       <main class="content-container">
         <div id="vista-panel-control">
@@ -659,6 +675,10 @@
         sidebarToggleBtn.addEventListener("click", function () {
           const contraida = sidebar.classList.toggle("sidebar-collapsed");
           sidebarToggleBtn.title = contraida ? "Expandir menú" : "Contraer menú";
+          sidebarToggleBtn.setAttribute("aria-expanded", contraida ? "false" : "true");
+          try {
+            localStorage.setItem("iagrocorr-barra-lateral", contraida ? "contraida" : "expandida");
+          } catch (e) {}
           // Al cambiar el ancho, los mapas de Leaflet deben recalcular su tamaño
           setTimeout(function () {
             if (window.mapaLotes) window.mapaLotes.invalidateSize();

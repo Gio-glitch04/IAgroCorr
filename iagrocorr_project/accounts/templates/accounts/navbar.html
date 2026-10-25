@@ -1,7 +1,7 @@
 {% load static %}
 <nav class="navbar navbar-expand-lg navbar-custom sticky-top px-lg-4">
         <div class="container-fluid p-0 d-flex align-items-center">
-            <button class="btn btn-link text-dark d-lg-none p-1 me-2 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+            <button class="nav-icon-btn d-lg-none p-1 me-2" type="button" title="Menú" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
                 <i class="bi bi-list fs-2"></i>
             </button>
 
@@ -10,8 +10,11 @@
                 IAgroCorr
             </a>
 
-            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenidoSuperior" aria-controls="navbarContenidoSuperior" aria-expanded="false" aria-label="Navegación superior">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler navbar-chevron ms-auto shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenidoSuperior" aria-controls="navbarContenidoSuperior" aria-expanded="false" aria-label="Mostrar u ocultar la navegación superior">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <polyline class="chevron-outline" points="5,9 12,16 19,9" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" />
+                    <polyline class="chevron-fill" points="5,9 12,16 19,9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarContenidoSuperior">
@@ -41,6 +44,11 @@
                         <span class="notification-badge"></span>
                     </button>
 
+                    <button class="nav-icon-btn theme-toggle" type="button" id="themeToggle" title="Cambiar a modo oscuro" aria-label="Cambiar entre modo claro y oscuro">
+                        <i class="bi bi-moon-stars theme-icon-dark"></i>
+                        <i class="bi bi-sun theme-icon-light"></i>
+                    </button>
+
                     <button class="nav-icon-btn" type="button" title="Configuración">
                         <i class="bi bi-gear"></i>
                     </button>
@@ -48,12 +56,12 @@
                     <div class="vr mx-2 text-secondary opacity-25 d-none d-lg-block" style="height: 25px;"></div>
 
                     <div class="dropdown">
-                        <button class="btn btn-light d-flex align-items-center gap-2 border" type="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 10px; padding: 0.4rem 0.8rem;">
-                            <i class="bi bi-person-circle text-secondary fs-5"></i>
-                            <span class="font-weight-500" style="font-size: 0.9rem;">
+                        <button class="profile-btn" type="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                            <span>
                                 {{ request.user.get_full_name|default:request.user.username }}
                             </span>
-                            <i class="bi bi-chevron-down text-muted" style="font-size: 0.75rem;"></i>
+                            <i class="bi bi-chevron-down"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border mt-2" aria-labelledby="profileMenu">
                             <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2 text-muted"></i> Mi Perfil</a></li>
@@ -66,3 +74,28 @@
             </div>
         </div>
     </nav>
+
+    <script>
+        // Interruptor de modo oscuro. El tema inicial ya lo aplicó theme_init.html en el <head>.
+        (function () {
+            const btn = document.getElementById("themeToggle");
+            if (!btn) return;
+            const root = document.documentElement;
+
+            function actualizarTitulo() {
+                const oscuro = root.getAttribute("data-bs-theme") === "dark";
+                btn.title = oscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro";
+                btn.setAttribute("aria-pressed", oscuro ? "true" : "false");
+            }
+            actualizarTitulo();
+
+            btn.addEventListener("click", function () {
+                const nuevo = root.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+                root.classList.add("theme-transition");
+                root.setAttribute("data-bs-theme", nuevo);
+                try { localStorage.setItem("iagrocorr-tema", nuevo); } catch (e) {}
+                actualizarTitulo();
+                window.setTimeout(function () { root.classList.remove("theme-transition"); }, 350);
+            });
+        })();
+    </script>

@@ -9,17 +9,18 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{% static 'css/styles2.css' %}?v=1.6">
+    {% include 'accounts/theme_init.html' %}
+    <link rel="stylesheet" href="{% static 'css/styles2.css' %}?v=1.7">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        .page-title { font-weight: 700; color: #212529; }
+        .page-title { font-weight: 700; color: var(--text-strong); }
 
         /* Tarjetas: mismo estilo que las del panel principal */
         .twin-card {
-            background-color: #ffffff;
+            background-color: var(--surface);
             border: 1px solid var(--card-border);
             border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
@@ -35,18 +36,18 @@
         .twin-eyebrow {
             font-size: 0.78rem;
             font-weight: 600;
-            color: #8a939b;
+            color: var(--text-soft);
             margin-bottom: 0.15rem;
         }
         .twin-place {
             font-size: 1rem;
             font-weight: 600;
-            color: #212529;
+            color: var(--text-strong);
             margin: 0;
         }
         .twin-coords {
             font-size: 0.78rem;
-            color: #8a939b;
+            color: var(--text-soft);
             font-variant-numeric: tabular-nums;
             white-space: nowrap;
         }
@@ -60,15 +61,15 @@
         .twin-desc {
             padding: 0.875rem 1.25rem 1.1rem;
             font-size: 0.875rem;
-            color: #6c757d;
+            color: var(--text-muted);
             margin: 0;
         }
-        .twin-desc strong { color: #495057; font-weight: 600; }
+        .twin-desc strong { color: var(--text-body); font-weight: 600; }
 
         /* Indicadores con barra de progreso fina */
         .metric-bar {
             height: 6px;
-            background-color: #eef0f2;
+            background-color: var(--track-bg);
             border-radius: 3px;
             overflow: hidden;
             margin-top: 0.85rem;
@@ -78,11 +79,11 @@
             height: 100%;
             width: 0;
             border-radius: 3px;
-            background-color: var(--primary-green);
+            background-color: var(--accent);
         }
         .metric-foot {
             font-size: 0.75rem;
-            color: #8a939b;
+            color: var(--text-soft);
             margin-top: 0.4rem;
         }
 
@@ -91,24 +92,24 @@
         .twin-table thead th {
             font-size: 0.75rem;
             font-weight: 600;
-            color: #8a939b;
-            background-color: #fafbfc;
+            color: var(--text-soft);
+            background-color: var(--surface-muted);
             border-bottom: 1px solid var(--card-border);
             padding-top: 0.7rem;
             padding-bottom: 0.7rem;
         }
-        .twin-table td { border-color: #f1f3f5; padding-top: 0.85rem; padding-bottom: 0.85rem; color: #495057; }
+        .twin-table td { background-color: transparent; border-color: var(--row-border); padding-top: 0.85rem; padding-bottom: 0.85rem; color: var(--text-body); }
         .twin-table tbody tr { cursor: pointer; transition: background-color 0.15s; }
-        .twin-table tbody tr:hover td { background-color: #f8f9fa; }
-        .twin-table tbody tr.active-row td { background-color: rgba(26, 77, 46, 0.06); }
-        .twin-table tbody tr.active-row td:first-child { box-shadow: inset 3px 0 0 var(--primary-green); }
-        .twin-table .row-name { font-weight: 600; color: #212529; }
-        .twin-table tr.active-row .row-name { color: var(--primary-green); }
-        .twin-table .coords { font-size: 0.8rem; color: #8a939b; font-variant-numeric: tabular-nums; }
+        .twin-table tbody tr:hover td { background-color: var(--hover-bg); }
+        .twin-table tbody tr.active-row td { background-color: var(--accent-softer); }
+        .twin-table tbody tr.active-row td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+        .twin-table .row-name { font-weight: 600; color: var(--text-strong); }
+        .twin-table tr.active-row .row-name { color: var(--accent); }
+        .twin-table .coords { font-size: 0.8rem; color: var(--text-soft); font-variant-numeric: tabular-nums; }
         .sim-cell { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; }
-        .sim-cell .mini-bar { width: 64px; height: 4px; background: #eef0f2; border-radius: 2px; overflow: hidden; }
-        .sim-cell .mini-bar span { display: block; height: 100%; background: var(--light-green); }
-        .sim-cell .sim-value { font-weight: 600; color: #212529; min-width: 2.6rem; text-align: right; font-variant-numeric: tabular-nums; }
+        .sim-cell .mini-bar { width: 64px; height: 4px; background: var(--track-bg); border-radius: 2px; overflow: hidden; }
+        .sim-cell .mini-bar span { display: block; height: 100%; background: var(--accent); }
+        .sim-cell .sim-value { font-weight: 600; color: var(--text-strong); min-width: 2.6rem; text-align: right; font-variant-numeric: tabular-nums; }
     </style>
 </head>
 <body>

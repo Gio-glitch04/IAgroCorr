@@ -1,0 +1,8 @@
+<script>
+    // Aplica el tema guardado antes de pintar la página, así no "parpadea" en blanco.
+    (function () {
+        let tema = "light";
+        try { tema = localStorage.getItem("iagrocorr-tema") || "light"; } catch (e) {}
+        document.documentElement.setAttribute("data-bs-theme", tema === "dark" ? "dark" : "light");
+    })();
+</script>
