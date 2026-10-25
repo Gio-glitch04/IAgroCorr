@@ -17,3 +17,4 @@ patches/
 
 # Extensiones
 *.patch
+.devcontainer/devcontainer-lock.json
