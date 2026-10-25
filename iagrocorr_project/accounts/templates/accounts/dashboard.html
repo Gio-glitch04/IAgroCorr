@@ -14,7 +14,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
     />
-    <link rel="stylesheet" href="{% static 'css/styles2.css' %}?v=1.5" />
+    <link rel="stylesheet" href="{% static 'css/styles2.css' %}?v=1.6" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -39,8 +39,8 @@
         aria-labelledby="sidebarLabel"
       >
         <div class="offcanvas-header border-bottom d-lg-none">
-          <h5 class="offcanvas-title fw-bold text-dark" id="sidebarLabel">
-            <i class="bi bi-tractor text-success"></i> IAgroCorr
+          <h5 class="offcanvas-title fw-bold" id="sidebarLabel" style="color: var(--primary-green)">
+            IAgroCorr
           </h5>
           <button
             type="button"
@@ -51,25 +51,10 @@
           ></button>
         </div>
 
-        <div class="offcanvas-body flex-column p-0 p-lg-1">
-          <div
-            class="d-none d-lg-flex align-items-center justify-content-between mb-4 mt-2 px-2"
-          >
-            <span class="fw-bold text-dark menu-label" style="font-size: 1.1rem"
-              >Menú Principal</span
-            >
-            <button
-              id="sidebarToggle"
-              class="btn btn-sm btn-light border-0 shadow-none"
-              title="Contraer/Expandir Menú"
-            >
-              <i class="bi bi-list fs-5"></i>
-            </button>
-          </div>
-
-          <div class="px-3 px-lg-0 mt-3 mt-lg-0">
-            <div class="sidebar-heading">Monitoreo Operativo</div>
-            <nav class="nav flex-column sidebar-nav mb-4">
+        <div class="offcanvas-body sidebar-body">
+          <div class="sidebar-group">
+            <div class="sidebar-heading">Monitoreo</div>
+            <nav class="nav flex-column sidebar-nav">
               <a
                 class="nav-link active"
                 href="#"
@@ -77,12 +62,12 @@
                 title="Panel de Control"
                 onclick="cambiarVista('panel')"
               >
-                <i class="bi bi-grid-1x2-fill"></i>
-                <span class="sidebar-text">Panel de Control</span>
+                <i class="bi bi-grid-1x2"></i>
+                <span class="sidebar-text">Panel de control</span>
               </a>
               <a class="nav-link" href="#" title="Lotes y Parcelas">
                 <i class="bi bi-map"></i>
-                <span class="sidebar-text">Lotes y Parcelas</span>
+                <span class="sidebar-text">Lotes y parcelas</span>
               </a>
               <a
                 class="nav-link"
@@ -91,10 +76,9 @@
                 title="Datos Ambientales"
                 onclick="cambiarVista('ambiental')"
               >
-                <i class="bi bi-moisture"></i>
-                <span class="sidebar-text">Datos Ambientales</span>
+                <i class="bi bi-cloud-sun"></i>
+                <span class="sidebar-text">Datos ambientales</span>
               </a>
-            
               <a
                 class="nav-link"
                 href="#"
@@ -103,21 +87,36 @@
                 onclick="cambiarVista('semaforo')"
               >
                 <i class="bi bi-stoplights"></i>
-                <span class="sidebar-text">Semáforo</span>
+                <span class="sidebar-text">Semáforo de impacto</span>
               </a>
             </nav>
+          </div>
 
-            <div class="sidebar-heading">Informes y Logs</div>
+          <div class="sidebar-group">
+            <div class="sidebar-heading">Informes</div>
             <nav class="nav flex-column sidebar-nav">
               <a class="nav-link" href="#" id="btn-sidebar-estadisticas" title="Estadísticas Avanzadas" onclick="cambiarVista('estadisticas')">
-                <i class="bi bi-graph-up-arrow"></i>
-                <span class="sidebar-text">Estadísticas Avanzadas</span>
+                <i class="bi bi-graph-up"></i>
+                <span class="sidebar-text">Estadísticas</span>
               </a>
               <a class="nav-link" href="#" title="Reportes Generados">
-                <i class="bi bi-file-earmark-bar-graph"></i>
-                <span class="sidebar-text">Reportes Generados</span>
+                <i class="bi bi-file-earmark-text"></i>
+                <span class="sidebar-text">Reportes</span>
               </a>
             </nav>
+          </div>
+
+          <div class="sidebar-footer d-none d-lg-block">
+            <button
+              id="sidebarToggle"
+              type="button"
+              class="sidebar-toggle"
+              title="Contraer menú"
+              aria-label="Contraer o expandir el menú"
+            >
+              <i class="bi bi-chevron-double-left"></i>
+              <span class="sidebar-text">Contraer menú</span>
+            </button>
           </div>
         </div>
       </aside>
@@ -658,7 +657,12 @@
 
         // Lógica del botón de la barra lateral (Estilo Microsoft)
         sidebarToggleBtn.addEventListener("click", function () {
-          sidebar.classList.toggle("sidebar-collapsed");
+          const contraida = sidebar.classList.toggle("sidebar-collapsed");
+          sidebarToggleBtn.title = contraida ? "Expandir menú" : "Contraer menú";
+          // Al cambiar el ancho, los mapas de Leaflet deben recalcular su tamaño
+          setTimeout(function () {
+            if (window.mapaLotes) window.mapaLotes.invalidateSize();
+          }, 250);
         });
       });
     </script>
