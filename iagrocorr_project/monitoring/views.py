@@ -158,6 +158,27 @@ def crear_lote_api(request):
 
 
 @login_required
+@require_POST
+def eliminar_lote_api(request, lote_id):
+    """
+    Elimina definitivamente un lote del usuario (y su historial del DW en cascada).
+    Un productor solo puede borrar sus propios lotes; el superusuario, cualquiera.
+    """
+    if request.user.is_superuser:
+        lote = get_object_or_404(Lote, id=lote_id)
+    else:
+        lote = get_object_or_404(Lote, id=lote_id, productor=request.user)
+
+    nombre = lote.nombre
+    lote.delete()
+    return JsonResponse({
+        "ok": True,
+        "mensaje": f"Lote '{nombre}' eliminado.",
+        "id": lote_id
+    })
+
+
+@login_required
 def capas_ambientales_geojson(request):
     """
     Retorna la cartografía ambiental protegida en GeoJSON:

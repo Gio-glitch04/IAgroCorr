@@ -66,7 +66,13 @@
                 <i class="bi bi-grid-1x2"></i>
                 <span class="sidebar-text">Panel de control</span>
               </a>
-              <a class="nav-link" href="#" title="Lotes y Parcelas">
+              <a
+                class="nav-link"
+                href="#"
+                id="btn-sidebar-lotes"
+                title="Lotes y Parcelas"
+                onclick="cambiarVista('lotes')"
+              >
                 <i class="bi bi-map"></i>
                 <span class="sidebar-text">Lotes y parcelas</span>
               </a>
@@ -152,9 +158,11 @@
               </p>
             </div>
             <button
-              id="btnIniciarDibujo"
+              id="btnIrAAnadirLote"
+              type="button"
               class="btn btn-success d-flex align-items-center gap-2 shadow-sm"
-              title="Haz clic para activar el dibujo de polígonos sobre el mapa"
+              title="Ir a Lotes y parcelas para dibujar un nuevo lote"
+              onclick="irAAnadirLote()"
               style="
                 background-color: var(--primary-green);
                 border: none;
@@ -278,6 +286,81 @@
                   </li>
                   {% endfor %}
                 </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vista Lotes y Parcelas: alta y baja de lotes -->
+        <div id="vista-lotes" class="d-none">
+          <div
+            class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3"
+          >
+            <div>
+              <h4 class="mb-1 text-dark" style="font-weight: 700">
+                Lotes y Parcelas
+              </h4>
+              <p class="text-muted mb-0" style="font-size: 0.9rem">
+                Dibuja nuevos lotes sobre el mapa o elimina los que ya no uses.
+              </p>
+            </div>
+            <button
+              id="btnIniciarDibujo"
+              type="button"
+              class="btn btn-success d-flex align-items-center gap-2 shadow-sm"
+              title="Haz clic para activar el dibujo de polígonos sobre el mapa"
+              style="
+                background-color: var(--primary-green);
+                border: none;
+                border-radius: 8px;
+              "
+            >
+              <i class="bi bi-pencil-square"></i>
+              <span class="d-none d-sm-inline">Añadir Lote en Mapa</span>
+            </button>
+          </div>
+
+          <div id="avisoModoDibujo" class="alert alert-success d-none align-items-center justify-content-between flex-wrap gap-2 py-2 px-3 mb-3" style="font-size: 0.88rem;">
+            <span><i class="bi bi-pencil me-1"></i> Modo dibujo activo: haz clic en el mapa para marcar los vértices del lote y vuelve a hacer clic en el primero para cerrarlo.</span>
+            <button type="button" class="btn btn-sm btn-outline-success" id="btnCancelarDibujo">Cancelar</button>
+          </div>
+
+          <div id="alertaGestionLotes" class="alert d-none py-2 px-3 mb-3" style="font-size: 0.88rem;"></div>
+
+          <div class="row g-4">
+            <div class="col-12 col-lg-7">
+              <div class="map-container position-relative">
+                <div id="mapaGestionLotes" style="width: 100%; height: 100%; border-radius: 16px;"></div>
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-5">
+              <div
+                class="bg-white border rounded-3 p-4 h-100"
+                style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02)"
+              >
+                <h6 class="fw-bold text-dark mb-3">
+                  <i class="bi bi-list-ul text-success me-2"></i>Mis lotes
+                  <span class="badge bg-success-subtle text-success ms-1" id="contadorLotes">0</span>
+                </h6>
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle mb-0" style="font-size: 0.88rem;">
+                    <thead>
+                      <tr>
+                        <th>Lote</th>
+                        <th class="d-none d-sm-table-cell">Cultivo</th>
+                        <th class="text-end">Ha</th>
+                        <th>Riesgo</th>
+                        <th class="text-end">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tablaLotesBody">
+                      <tr>
+                        <td colspan="5" class="text-muted text-center py-4">Cargando lotes...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -795,6 +878,7 @@
       function cambiarVista(vista) {
         // 1. Capturar los contenedores de las vistas
         const vistaPanel = document.getElementById("vista-panel-control");
+        const vistaLotes = document.getElementById("vista-lotes");
         const vistaAmbiental = document.getElementById(
           "vista-datos-ambientales",
         );
@@ -803,17 +887,20 @@
 
         // 2. Capturar los botones de la barra lateral
         const btnPanel = document.getElementById("btn-sidebar-panel");
+        const btnLotes = document.getElementById("btn-sidebar-lotes");
         const btnAmbiental = document.getElementById("btn-sidebar-ambiental");
         const btnSemaforo = document.getElementById("btn-sidebar-semaforo");
         const btnEstadisticas = document.getElementById("btn-sidebar-estadisticas");
 
         // 3. Ocultar ambas vistas y quitar la clase 'active' de ambos botones
         vistaPanel.classList.add("d-none");
+        vistaLotes.classList.add("d-none");
         vistaAmbiental.classList.add("d-none");
         vistaSemaforo.classList.add("d-none");
         vistaEstadisticas.classList.add("d-none");
 
         btnPanel.classList.remove("active");
+        btnLotes.classList.remove("active");
         btnAmbiental.classList.remove("active");
         btnSemaforo.classList.remove("active");
         btnEstadisticas.classList.remove("active");
@@ -825,6 +912,12 @@
           if (window.mapaLotes) {
             setTimeout(() => { window.mapaLotes.invalidateSize(); }, 200);
           }
+        } else if (vista === "lotes") {
+          vistaLotes.classList.remove("d-none");
+          btnLotes.classList.add("active");
+          if (window.mapaGestionLotes) {
+            setTimeout(() => { window.mapaGestionLotes.invalidateSize(); }, 200);
+          }
         } else if (vista === "ambiental") {
           vistaAmbiental.classList.remove("d-none");
           btnAmbiental.classList.add("active");
@@ -835,56 +928,160 @@
           vistaEstadisticas.classList.remove("d-none");
           btnEstadisticas.classList.add("active");
         }
+
+        // En móvil, cerrar la barra lateral al elegir una vista
+        const sidebarEl = document.getElementById("sidebar");
+        if (window.innerWidth < 992 && sidebarEl && window.bootstrap) {
+          const oc = bootstrap.Offcanvas.getInstance(sidebarEl);
+          if (oc) oc.hide();
+        }
       }
+
+      // Botón "Añadir Lote en Mapa" del panel: lleva a Lotes y parcelas
+      // y abre directamente el modo de dibujo.
+      function irAAnadirLote() {
+        cambiarVista("lotes");
+        if (window.iniciarDibujoLote) {
+          setTimeout(window.iniciarDibujoLote, 250);
+        }
+      }
+
+      // Permite entrar directo a una vista con /dashboard/#lotes
+      // (o /dashboard/#lotes-dibujar para abrir además el modo de dibujo).
+      // Se ejecuta en "load" para que los mapas ya estén creados.
+      function abrirVistaSegunHash() {
+        const hash = window.location.hash.replace("#", "");
+        if (hash === "lotes") {
+          cambiarVista("lotes");
+        } else if (hash === "lotes-dibujar") {
+          irAAnadirLote();
+        }
+      }
+      window.addEventListener("load", abrirVistaSegunHash);
+      window.addEventListener("hashchange", abrirVistaSegunHash);
     </script>
     <script>
       // ==========================================
-      // INICIALIZACIÓN DEL MAPA GIS DE LOTES
+      // MAPAS GIS DE LOTES
+      //  - Panel de control: mapa solo informativo.
+      //  - Lotes y parcelas: mapa de gestión (dibujar y eliminar lotes).
       // ==========================================
       document.addEventListener("DOMContentLoaded", function () {
         const centroCorrientes = [-28.70, -58.00];
-        const map = L.map('mapaLotes', {
-          zoomControl: true,
-          scrollWheelZoom: true
-        }).setView(centroCorrientes, 7);
-        window.mapaLotes = map;
 
-        // Capa Satelital (Esri World Imagery)
-        const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: '&copy; Esri, Maxar, Earthstar Geographics',
-          maxZoom: 18
+        // Las capas de referencia se piden una sola vez y se comparten entre los dos mapas
+        const pedirJSON = (url) => fetch(url).then(res => {
+          if (!res.ok) throw new Error("Respuesta no OK de " + url);
+          return res.json();
         });
+        const zonasUrbanasPromise = pedirJSON('/monitoring/api/zonas-urbanas-geojson/');
+        const capasAmbientalesPromise = pedirJSON('/monitoring/api/capas-ambientales-geojson/');
 
-        // Capa de Calles (OpenStreetMap)
-        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors',
-          maxZoom: 19
-        });
+        function escaparHtml(texto) {
+          return String(texto ?? '').replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+          }[c]));
+        }
 
-        // Capa de Etiquetas y Límites
-        const esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-          attribution: '&copy; Esri',
-          maxZoom: 18
-        });
+        function colorRiesgo(riesgo) {
+          if (riesgo === 'AMARILLO') return '#ffc107';
+          if (riesgo === 'ROJO') return '#dc3545';
+          return '#198754';
+        }
 
-        // Grupo Híbrido (Satélite + Nombres)
-        const sateliteHibrido = L.layerGroup([esriSatellite, esriLabels]);
-        sateliteHibrido.addTo(map);
+        function badgeRiesgo(riesgo) {
+          if (riesgo === 'VERDE') return 'bg-success';
+          if (riesgo === 'AMARILLO') return 'bg-warning text-dark';
+          return 'bg-danger';
+        }
 
-        // Selector de capas
-        const baseMaps = {
-          "Satelital Híbrido": sateliteHibrido,
-          "Mapa Calles (OSM)": osm
-        };
-        const overlayMaps = {};
-        const layerControl = L.control.layers(baseMaps, overlayMaps, { position: 'topright' }).addTo(map);
+        function formatDist(d) {
+          if (d === null || d === undefined) return 'S/D';
+          return d >= 1000 ? (d / 1000).toFixed(1) + ' km' : d.toFixed(0) + ' m';
+        }
 
-        // 1. CARGAR CAPA DE ZONAS URBANAS (EXCLUSIÓN)
-        fetch('/monitoring/api/zonas-urbanas-geojson/')
-          .then(res => res.json())
-          .then(data => {
+        function popupLote(p, conAcciones) {
+          let alertasHtml = '';
+          if (p.alertas && p.alertas.length > 0) {
+            alertasHtml = `
+              <div class="alert alert-danger p-1 mt-2 mb-0" style="font-size: 0.73rem;">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> ${escaparHtml(p.alertas[0])}
+              </div>
+            `;
+          } else {
+            alertasHtml = `
+              <div class="badge bg-success-subtle text-success mt-2 py-1 px-2 w-100 text-start" style="font-size: 0.72rem;">
+                <i class="bi bi-shield-check me-1"></i> Amortiguamientos conformes a norma
+              </div>
+            `;
+          }
+
+          const accionesHtml = conAcciones ? `
+            <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" data-eliminar-lote="${p.id}">
+              <i class="bi bi-trash me-1"></i> Eliminar lote
+            </button>
+          ` : '';
+
+          return `
+            <div style="min-width: 240px; font-family: system-ui, sans-serif;">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong class="text-dark fs-6">${escaparHtml(p.nombre)}</strong>
+                <span class="badge ${badgeRiesgo(p.riesgo)}">${escaparHtml(p.riesgo)} (${p.score_riesgo || 10}/100)</span>
+              </div>
+              <hr class="my-1 border-secondary">
+              <div class="text-muted" style="font-size: 0.82rem;">
+                <div><strong>Cultivo:</strong> ${escaparHtml(p.cultivo || 'No registrado')}</div>
+                <div><strong>Superficie:</strong> ${p.superficie_ha ? escaparHtml(p.superficie_ha) + ' Ha' : 'S/D'}</div>
+                <div class="mt-1 pt-1 border-top">
+                  <div><i class="bi bi-water text-primary me-1"></i><strong>Cuerpo de Agua:</strong> ${formatDist(p.distancia_agua_m)}</div>
+                  <div><i class="bi bi-tree text-success me-1"></i><strong>Esteros del Iberá:</strong> ${formatDist(p.distancia_reserva_m)}</div>
+                </div>
+                ${alertasHtml}
+              </div>
+              ${accionesHtml}
+            </div>
+          `;
+        }
+
+        // Crea un mapa con fondo satelital, capas de referencia y lotes del usuario
+        function crearMapaLotes(contenedorId, opciones) {
+          const conAcciones = !!(opciones && opciones.conAcciones);
+          const map = L.map(contenedorId, {
+            zoomControl: true,
+            scrollWheelZoom: true
+          }).setView(centroCorrientes, 7);
+
+          const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+            maxZoom: 18
+          });
+          const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19
+          });
+          const esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '&copy; Esri',
+            maxZoom: 18
+          });
+          const sateliteHibrido = L.layerGroup([esriSatellite, esriLabels]);
+          sateliteHibrido.addTo(map);
+
+          const layerControl = L.control.layers({
+            "Satelital Híbrido": sateliteHibrido,
+            "Mapa Calles (OSM)": osm
+          }, {}, { position: 'topright' }).addTo(map);
+
+          // Recalcula el tamaño cuando el contenedor se muestra (las vistas ocultas miden 0)
+          const contenedor = document.getElementById(contenedorId);
+          if (contenedor && window.ResizeObserver) {
+            new ResizeObserver(() => map.invalidateSize()).observe(contenedor);
+          }
+
+          // Zonas urbanas (exclusión)
+          zonasUrbanasPromise.then(data => {
             if (data && data.features && data.features.length > 0) {
               const urbanLayer = L.geoJSON(data, {
+                pmIgnore: true,
                 style: {
                   color: '#dc3545',
                   fillColor: '#6c757d',
@@ -895,218 +1092,194 @@
                 onEachFeature: function (feature, layer) {
                   const p = feature.properties;
                   layer.bindTooltip(
-                    `🚫 <strong>${p.nombre}</strong><br><span class="text-danger small">Zona Urbana - Exclusión de Lotes (${p.buffer_m}m)</span>`,
+                    `🚫 <strong>${escaparHtml(p.nombre)}</strong><br><span class="text-danger small">Zona Urbana - Exclusión de Lotes (${p.buffer_m}m)</span>`,
                     { sticky: true }
                   );
                 }
               }).addTo(map);
               layerControl.addOverlay(urbanLayer, "🚫 Zonas Urbanas (Exclusiones)");
             }
-          })
-          .catch(err => console.warn("Aviso al cargar zonas urbanas:", err));
+          }).catch(err => console.warn("Aviso al cargar zonas urbanas:", err));
 
-        // 1.1 CARGAR CAPAS AMBIENTALES PROTEGIDAS (Esteros del Iberá y Red Fluvial)
-        fetch('/monitoring/api/capas-ambientales-geojson/')
-          .then(res => res.json())
-          .then(data => {
-            if (data && data.features && data.features.length > 0) {
-              // Capa Esteros del Iberá
-              const iberaFeatures = data.features.filter(f => f.properties.tipo_capa === 'area_protegida');
-              if (iberaFeatures.length > 0) {
-                const iberaLayer = L.geoJSON({ type: "FeatureCollection", features: iberaFeatures }, {
-                  style: {
-                    color: '#055160',
-                    fillColor: '#0dcaf0',
-                    fillOpacity: 0.22,
-                    weight: 2.5,
-                    dashArray: '6, 6'
-                  },
-                  onEachFeature: function (feature, layer) {
-                    const p = feature.properties;
-                    layer.bindTooltip(
-                      `🌿 <strong>${p.nombre}</strong><br><span class="text-info small">${p.categoria} (Buffer ${p.buffer_m}m)</span>`,
-                      { sticky: true }
-                    );
-                  }
-                }).addTo(map);
-                layerControl.addOverlay(iberaLayer, "🌿 Reserva Esteros del Iberá");
-              }
+          // Esteros del Iberá y red fluvial
+          capasAmbientalesPromise.then(data => {
+            if (!(data && data.features && data.features.length > 0)) return;
 
-              // Capa Cursos de Agua y Ríos
-              const aguasFeatures = data.features.filter(f => f.properties.tipo_capa === 'cuerpo_agua');
-              if (aguasFeatures.length > 0) {
-                const aguasLayer = L.geoJSON({ type: "FeatureCollection", features: aguasFeatures }, {
-                  style: function (f) {
-                    const isPolygon = f.geometry.type.includes('Polygon');
-                    return {
-                      color: '#0d6efd',
-                      fillColor: '#0d6efd',
-                      fillOpacity: isPolygon ? 0.35 : 0,
-                      weight: isPolygon ? 1.5 : 3.5,
-                      opacity: 0.85
-                    };
-                  },
-                  onEachFeature: function (feature, layer) {
-                    const p = feature.properties;
-                    layer.bindTooltip(
-                      `💧 <strong>${p.nombre}</strong><br><span class="text-primary small">${p.tipo} - Amortiguamiento ${p.buffer_m}m</span>`,
-                      { sticky: true }
-                    );
-                  }
-                }).addTo(map);
-                layerControl.addOverlay(aguasLayer, "💧 Cursos de Agua y Ríos");
-              }
+            const iberaFeatures = data.features.filter(f => f.properties.tipo_capa === 'area_protegida');
+            if (iberaFeatures.length > 0) {
+              const iberaLayer = L.geoJSON({ type: "FeatureCollection", features: iberaFeatures }, {
+                pmIgnore: true,
+                style: {
+                  color: '#055160',
+                  fillColor: '#0dcaf0',
+                  fillOpacity: 0.22,
+                  weight: 2.5,
+                  dashArray: '6, 6'
+                },
+                onEachFeature: function (feature, layer) {
+                  const p = feature.properties;
+                  layer.bindTooltip(
+                    `🌿 <strong>${escaparHtml(p.nombre)}</strong><br><span class="text-info small">${escaparHtml(p.categoria)} (Buffer ${p.buffer_m}m)</span>`,
+                    { sticky: true }
+                  );
+                }
+              }).addTo(map);
+              layerControl.addOverlay(iberaLayer, "🌿 Reserva Esteros del Iberá");
             }
-          })
-          .catch(err => console.warn("Aviso al cargar capas ambientales:", err));
 
-        // 2. CARGAR LOTES GEOJSON EXISTENTES CON REGLAS ESPACIALES
-        let lotesLayer = null;
-        function cargarLotes() {
-          fetch('/monitoring/api/lotes-geojson/')
-            .then(res => {
-              if (!res.ok) throw new Error("Respuesta no OK de la API");
-              return res.json();
-            })
-            .then(data => {
-              if (data && data.features && data.features.length > 0) {
-                if (lotesLayer) map.removeLayer(lotesLayer);
-                lotesLayer = L.geoJSON(data, {
-                  style: function (feature) {
-                    const riesgo = feature.properties.riesgo;
-                    let color = '#198754';
-                    if (riesgo === 'AMARILLO') color = '#ffc107';
-                    else if (riesgo === 'ROJO') color = '#dc3545';
-                    return {
-                      color: color,
-                      fillColor: color,
-                      fillOpacity: 0.45,
-                      weight: 2.5
-                    };
+            const aguasFeatures = data.features.filter(f => f.properties.tipo_capa === 'cuerpo_agua');
+            if (aguasFeatures.length > 0) {
+              const aguasLayer = L.geoJSON({ type: "FeatureCollection", features: aguasFeatures }, {
+                pmIgnore: true,
+                style: function (f) {
+                  const isPolygon = f.geometry.type.includes('Polygon');
+                  return {
+                    color: '#0d6efd',
+                    fillColor: '#0d6efd',
+                    fillOpacity: isPolygon ? 0.35 : 0,
+                    weight: isPolygon ? 1.5 : 3.5,
+                    opacity: 0.85
+                  };
+                },
+                onEachFeature: function (feature, layer) {
+                  const p = feature.properties;
+                  layer.bindTooltip(
+                    `💧 <strong>${escaparHtml(p.nombre)}</strong><br><span class="text-primary small">${escaparHtml(p.tipo)} - Amortiguamiento ${p.buffer_m}m</span>`,
+                    { sticky: true }
+                  );
+                }
+              }).addTo(map);
+              layerControl.addOverlay(aguasLayer, "💧 Cursos de Agua y Ríos");
+            }
+          }).catch(err => console.warn("Aviso al cargar capas ambientales:", err));
+
+          // Lotes del usuario
+          let lotesLayer = null;
+          const capasPorId = {};
+
+          function pintarLotes(data) {
+            if (lotesLayer) {
+              map.removeLayer(lotesLayer);
+              layerControl.removeLayer(lotesLayer);
+            }
+            Object.keys(capasPorId).forEach(k => delete capasPorId[k]);
+
+            lotesLayer = L.geoJSON(data, {
+              pmIgnore: true,
+              style: function (feature) {
+                const color = colorRiesgo(feature.properties.riesgo);
+                return { color: color, fillColor: color, fillOpacity: 0.45, weight: 2.5 };
+              },
+              onEachFeature: function (feature, layer) {
+                capasPorId[feature.properties.id] = layer;
+                layer.bindPopup(popupLote(feature.properties, conAcciones));
+                layer.on({
+                  mouseover: function (e) {
+                    e.target.setStyle({ fillOpacity: 0.75, weight: 3.5 });
                   },
-                  onEachFeature: function (feature, layer) {
-                    const p = feature.properties;
-                    const badgeClass = p.riesgo === 'VERDE' ? 'bg-success' : (p.riesgo === 'AMARILLO' ? 'bg-warning text-dark' : 'bg-danger');
-                    
-                    const formatDist = (d) => {
-                      if (d === null || d === undefined) return 'S/D';
-                      return d >= 1000 ? (d / 1000).toFixed(1) + ' km' : d.toFixed(0) + ' m';
-                    };
-
-                    let alertasHtml = '';
-                    if (p.alertas && p.alertas.length > 0) {
-                      alertasHtml = `
-                        <div class="alert alert-danger p-1 mt-2 mb-0" style="font-size: 0.73rem;">
-                          <i class="bi bi-exclamation-triangle-fill me-1"></i> ${p.alertas[0]}
-                        </div>
-                      `;
-                    } else {
-                      alertasHtml = `
-                        <div class="badge bg-success-subtle text-success mt-2 py-1 px-2 w-100 text-start" style="font-size: 0.72rem;">
-                          <i class="bi bi-shield-check me-1"></i> Amortiguamientos conformes a norma
-                        </div>
-                      `;
-                    }
-
-                    const popupHtml = `
-                      <div style="min-width: 240px; font-family: system-ui, sans-serif;">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                          <strong class="text-dark fs-6">${p.nombre}</strong>
-                          <span class="badge ${badgeClass}">${p.riesgo} (${p.score_riesgo || 10}/100)</span>
-                        </div>
-                        <hr class="my-1 border-secondary">
-                        <div class="text-muted" style="font-size: 0.82rem;">
-                          <div><strong>Cultivo:</strong> ${p.cultivo || 'No registrado'}</div>
-                          <div><strong>Superficie:</strong> ${p.superficie_ha ? p.superficie_ha + ' Ha' : 'S/D'}</div>
-                          <div class="mt-1 pt-1 border-top">
-                            <div><i class="bi bi-water text-primary me-1"></i><strong>Cuerpo de Agua:</strong> ${formatDist(p.distancia_agua_m)}</div>
-                            <div><i class="bi bi-tree text-success me-1"></i><strong>Esteros del Iberá:</strong> ${formatDist(p.distancia_reserva_m)}</div>
-                          </div>
-                          ${alertasHtml}
-                        </div>
-                      </div>
-                    `;
-                    layer.bindPopup(popupHtml);
-
-                    layer.on({
-                      mouseover: function (e) {
-                        e.target.setStyle({ fillOpacity: 0.75, weight: 3.5 });
-                      },
-                      mouseout: function (e) {
-                        lotesLayer.resetStyle(e.target);
-                      }
-                    });
+                  mouseout: function (e) {
+                    lotesLayer.resetStyle(e.target);
                   }
-                }).addTo(map);
-
-                layerControl.addOverlay(lotesLayer, "🌾 Lotes Monitoreados");
-                map.fitBounds(lotesLayer.getBounds(), { padding: [40, 40] });
+                });
               }
+            }).addTo(map);
+
+            layerControl.addOverlay(lotesLayer, "🌾 Lotes Monitoreados");
+            if (data.features && data.features.length > 0) {
+              map.fitBounds(lotesLayer.getBounds(), { padding: [40, 40] });
+            }
+          }
+
+          function enfocarLote(id) {
+            const capa = capasPorId[id];
+            if (!capa) return;
+            map.fitBounds(capa.getBounds(), { padding: [60, 60], maxZoom: 15 });
+            capa.openPopup();
+          }
+
+          function quitarLote(id) {
+            const capa = capasPorId[id];
+            if (capa && lotesLayer) lotesLayer.removeLayer(capa);
+            delete capasPorId[id];
+          }
+
+          return { map, pintarLotes, enfocarLote, quitarLote };
+        }
+
+        // ------------------------------------------
+        // MAPA DEL PANEL DE CONTROL (solo informativo)
+        // ------------------------------------------
+        const mapaPanel = crearMapaLotes('mapaLotes', { conAcciones: false });
+        window.mapaLotes = mapaPanel.map;
+
+        // ------------------------------------------
+        // MAPA DE GESTIÓN (Lotes y parcelas)
+        // ------------------------------------------
+        const mapaGestion = crearMapaLotes('mapaGestionLotes', { conAcciones: true });
+        const map = mapaGestion.map;
+        window.mapaGestionLotes = map;
+
+        let lotesActuales = [];
+
+        function renderTablaLotes() {
+          const tbody = document.getElementById('tablaLotesBody');
+          document.getElementById('contadorLotes').innerText = lotesActuales.length;
+
+          if (lotesActuales.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="5" class="text-muted text-center py-4">
+                  <i class="bi bi-map fs-4 d-block mb-1 text-secondary"></i>
+                  Todavía no registraste lotes. Usa "Añadir Lote en Mapa" para dibujar el primero.
+                </td>
+              </tr>
+            `;
+            return;
+          }
+
+          tbody.innerHTML = lotesActuales.map(f => {
+            const p = f.properties;
+            return `
+              <tr>
+                <td><strong class="text-dark">${escaparHtml(p.nombre)}</strong></td>
+                <td class="text-muted d-none d-sm-table-cell">${escaparHtml(p.cultivo || '-')}</td>
+                <td class="text-end">${p.superficie_ha ? escaparHtml(p.superficie_ha) : '-'}</td>
+                <td><span class="badge ${badgeRiesgo(p.riesgo)}">${escaparHtml(p.riesgo)}</span></td>
+                <td class="text-end text-nowrap">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" title="Ver en el mapa" data-ver-lote="${p.id}">
+                    <i class="bi bi-geo-alt"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar lote" data-eliminar-lote="${p.id}">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        function cargarLotes() {
+          pedirJSON('/monitoring/api/lotes-geojson/')
+            .then(data => {
+              lotesActuales = (data && data.features) ? data.features : [];
+              mapaPanel.pintarLotes(data);
+              mapaGestion.pintarLotes(data);
+              renderTablaLotes();
             })
             .catch(err => {
               console.warn("Información de lotes GeoJSON:", err);
+              document.getElementById('tablaLotesBody').innerHTML = `
+                <tr><td colspan="5" class="text-danger text-center py-4">No se pudieron cargar los lotes.</td></tr>
+              `;
             });
         }
         cargarLotes();
 
-
-        // 3. HERRAMIENTAS DE DIBUJO CON LEAFLET-GEOMAN
-        map.pm.addControls({
-          position: 'topleft',
-          drawPolygon: true,
-          drawMarker: false,
-          drawCircleMarker: false,
-          drawPolyline: false,
-          drawRectangle: true,
-          drawCircle: false,
-          drawText: false,
-          editMode: false,
-          dragMode: false,
-          cutPolygon: false,
-          removalMode: true
-        });
-        map.pm.setLang('es');
-
-        // Botón "Añadir Lote en Mapa" en la cabecera
-        const btnDibujar = document.getElementById('btnIniciarDibujo');
-        if (btnDibujar) {
-          btnDibujar.addEventListener('click', function () {
-            map.pm.enableDraw('Polygon', {
-              snappable: true,
-              snapDistance: 20
-            });
-          });
+        function mostrarAviso(tipo, texto) {
+          const alerta = document.getElementById('alertaGestionLotes');
+          alerta.className = `alert alert-${tipo} py-2 px-3 mb-3`;
+          alerta.innerText = texto;
         }
-
-        // 4. CAPTURA DEL POLÍGONO DIBUJADO Y MODAL DE CONFIRMACIÓN
-        let capaTemporalDibujada = null;
-        let geometriaTemporal = null;
-        const modalEl = document.getElementById('modalNuevoLote');
-        const modalNuevoLote = new bootstrap.Modal(modalEl);
-
-        map.on('pm:create', function (e) {
-          capaTemporalDibujada = e.layer;
-          geometriaTemporal = e.layer.toGeoJSON().geometry;
-
-          // Limpiar inputs y alertas previas
-          document.getElementById('inputNombreLote').value = '';
-          document.getElementById('alertaErrorLote').classList.add('d-none');
-          document.getElementById('textoErrorLote').innerText = '';
-
-          // Abrir modal de datos
-          modalNuevoLote.show();
-        });
-
-        // Si descarta o cierra el modal sin guardar, eliminar el polígono temporal del mapa
-        function descartarPoligonoTemporal() {
-          if (capaTemporalDibujada) {
-            map.removeLayer(capaTemporalDibujada);
-            capaTemporalDibujada = null;
-            geometriaTemporal = null;
-          }
-        }
-        document.getElementById('btnDescartarDibujo').addEventListener('click', descartarPoligonoTemporal);
-        document.getElementById('btnCerrarModalLote').addEventListener('click', descartarPoligonoTemporal);
 
         // Función para leer cookies de Django (CSRF)
         function getCookie(name) {
@@ -1123,8 +1296,131 @@
           }
           return cookieValue;
         }
+        function csrfToken() {
+          return getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        }
 
-        // 5. GUARDAR LOTE EN POSTGIS MEDIANTE LA API
+        // Al cambiar lotes, la página se recarga en esta misma vista para
+        // que los indicadores del panel de control queden al día.
+        function recargarEnVistaLotes() {
+          if (window.location.hash !== '#lotes') {
+            history.replaceState(null, '', '#lotes');
+          }
+          window.location.reload();
+        }
+
+        // ELIMINAR LOTE (desde la tabla o desde el popup del mapa)
+        function eliminarLote(id) {
+          const feature = lotesActuales.find(f => String(f.properties.id) === String(id));
+          const nombre = feature ? feature.properties.nombre : 'este lote';
+          if (!confirm(`¿Eliminar el lote "${nombre}"? Se borrará también su historial de mediciones. Esta acción no se puede deshacer.`)) {
+            return;
+          }
+
+          fetch(`/monitoring/api/eliminar-lote/${id}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrfToken() }
+          })
+          .then(async response => {
+            let data = {};
+            try { data = await response.json(); } catch (e) {}
+            if (!response.ok || !data.ok) {
+              throw new Error(data.error || "No se pudo eliminar el lote.");
+            }
+            return data;
+          })
+          .then(() => {
+            map.closePopup();
+            mapaGestion.quitarLote(id);
+            mapaPanel.quitarLote(id);
+            lotesActuales = lotesActuales.filter(f => String(f.properties.id) !== String(id));
+            renderTablaLotes();
+            recargarEnVistaLotes();
+          })
+          .catch(error => mostrarAviso('danger', error.message));
+        }
+
+        document.addEventListener('click', function (e) {
+          const btnEliminar = e.target.closest('[data-eliminar-lote]');
+          if (btnEliminar) {
+            eliminarLote(btnEliminar.getAttribute('data-eliminar-lote'));
+            return;
+          }
+          const btnVer = e.target.closest('[data-ver-lote]');
+          if (btnVer) {
+            mapaGestion.enfocarLote(btnVer.getAttribute('data-ver-lote'));
+            document.getElementById('mapaGestionLotes').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        });
+
+        // HERRAMIENTAS DE DIBUJO CON LEAFLET-GEOMAN (solo en Lotes y parcelas)
+        map.pm.addControls({
+          position: 'topleft',
+          drawPolygon: true,
+          drawMarker: false,
+          drawCircleMarker: false,
+          drawPolyline: false,
+          drawRectangle: true,
+          drawCircle: false,
+          drawText: false,
+          editMode: false,
+          dragMode: false,
+          cutPolygon: false,
+          rotateMode: false,
+          removalMode: false
+        });
+        map.pm.setLang('es');
+
+        const avisoDibujo = document.getElementById('avisoModoDibujo');
+        map.on('pm:drawstart', () => {
+          avisoDibujo.classList.remove('d-none');
+          avisoDibujo.classList.add('d-flex');
+        });
+        map.on('pm:drawend', () => {
+          avisoDibujo.classList.add('d-none');
+          avisoDibujo.classList.remove('d-flex');
+        });
+        document.getElementById('btnCancelarDibujo').addEventListener('click', () => map.pm.disableDraw());
+
+        window.iniciarDibujoLote = function () {
+          map.invalidateSize();
+          map.pm.enableDraw('Polygon', {
+            snappable: true,
+            snapDistance: 20
+          });
+          document.getElementById('mapaGestionLotes').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+        document.getElementById('btnIniciarDibujo').addEventListener('click', window.iniciarDibujoLote);
+
+        // CAPTURA DEL POLÍGONO DIBUJADO Y MODAL DE CONFIRMACIÓN
+        let capaTemporalDibujada = null;
+        let geometriaTemporal = null;
+        const modalEl = document.getElementById('modalNuevoLote');
+        const modalNuevoLote = new bootstrap.Modal(modalEl);
+
+        map.on('pm:create', function (e) {
+          capaTemporalDibujada = e.layer;
+          geometriaTemporal = e.layer.toGeoJSON().geometry;
+
+          document.getElementById('inputNombreLote').value = '';
+          document.getElementById('alertaErrorLote').classList.add('d-none');
+          document.getElementById('textoErrorLote').innerText = '';
+
+          modalNuevoLote.show();
+        });
+
+        // Si descarta o cierra el modal sin guardar, eliminar el polígono temporal del mapa
+        function descartarPoligonoTemporal() {
+          if (capaTemporalDibujada) {
+            map.removeLayer(capaTemporalDibujada);
+            capaTemporalDibujada = null;
+            geometriaTemporal = null;
+          }
+        }
+        document.getElementById('btnDescartarDibujo').addEventListener('click', descartarPoligonoTemporal);
+        document.getElementById('btnCerrarModalLote').addEventListener('click', descartarPoligonoTemporal);
+
+        // GUARDAR LOTE EN POSTGIS MEDIANTE LA API
         document.getElementById('btnConfirmarGuardarLote').addEventListener('click', function () {
           const nombre = document.getElementById('inputNombreLote').value.trim();
           const cultivo = document.getElementById('inputCultivoLote').value;
@@ -1139,7 +1435,6 @@
             return;
           }
 
-          // Bloquear botón y mostrar spinner
           spinner.classList.remove('d-none');
           btnGuardar.setAttribute('disabled', 'true');
           alertaError.classList.add('d-none');
@@ -1148,7 +1443,7 @@
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'X-CSRFToken': getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value
+              'X-CSRFToken': csrfToken()
             },
             body: JSON.stringify({
               nombre: nombre,
@@ -1163,11 +1458,10 @@
             }
             return data;
           })
-          .then(data => {
-            // Éxito: cerrar modal y recargar página para actualizar KPIs y tablas
+          .then(() => {
             modalNuevoLote.hide();
             descartarPoligonoTemporal();
-            window.location.reload();
+            recargarEnVistaLotes();
           })
           .catch(error => {
             // Mostrar error (ej: si invade zona urbana)
