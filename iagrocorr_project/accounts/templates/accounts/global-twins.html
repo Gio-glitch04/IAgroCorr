@@ -254,14 +254,14 @@
 
         // 2. Inicializar Mapa 1: Corrientes (Político-Satelital Fijo)
         const mapCorrientes = L.map('mapCorrientes', mapOptions).setView(centroCorrientes, 7);
-        L.tileLayer(URL_SATELITAL, { attribution: 'Tiles © Esri' }).addTo(mapCorrientes);
+        L.tileLayer(URL_SATELITAL, { attribution: 'Tiles © Esri', maxNativeZoom: 17 }).addTo(mapCorrientes);
         L.tileLayer(URL_LIMITES_POLITICOS, { attribution: 'Labels © Esri' }).addTo(mapCorrientes);
         L.marker(centroCorrientes).addTo(mapCorrientes).bindPopup("<b>Corrientes, ARG</b><br>Región de Referencia Base").openPopup();
 
         // 3. Inicializar Mapa 2: Gemelo Dinámico (Político-Satelital con FlyTo)
         const primerGemelo = gemelosData.length > 0 ? gemelosData[0] : { lat: -29.75, lng: -56.80, nombre: "Sin datos", sim: 0, hum: 0, ndviVal: 0, ndviText: "-" };
         const mapGemelo = L.map('mapGemelo', mapOptions).setView([primerGemelo.lat, primerGemelo.lng], 8);
-        L.tileLayer(URL_SATELITAL, { attribution: 'Tiles © Esri' }).addTo(mapGemelo);
+        L.tileLayer(URL_SATELITAL, { attribution: 'Tiles © Esri', maxNativeZoom: 17 }).addTo(mapGemelo);
         L.tileLayer(URL_LIMITES_POLITICOS, { attribution: 'Labels © Esri' }).addTo(mapGemelo);
         let markerGemelo = L.marker([primerGemelo.lat, primerGemelo.lng]).addTo(mapGemelo);
 

@@ -776,7 +776,7 @@
           center: [-28.7, -58.0], // Centro en Corrientes
           zoom: 7,
           minZoom: 6, // EVITA el zoom hacia afuera que muestra el espacio gris
-          maxZoom: 18, // Evita el zoom excesivo hacia adentro
+          maxZoom: 19, // Evita el zoom excesivo hacia adentro
         });
 
         // 2. Definir los Mapas Base (Fondos) - Nivel 1
@@ -784,6 +784,10 @@
           "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
           {
             attribution: "Tiles &copy; Esri",
+            // Esri no tiene imagen nítida en zooms altos en zonas rurales y muestra
+            // "Map data not yet available". Más allá del 17 se reescalan los tiles del 17.
+            maxNativeZoom: 17,
+            maxZoom: 19,
             zIndex: 1, // <--- Mantiene el fondo siempre atrás
           },
         ).addTo(map);
@@ -792,6 +796,7 @@
           "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
           {
             attribution: "&copy; OpenStreetMap contributors",
+            maxZoom: 19,
             zIndex: 1, // <--- Mantiene el fondo siempre atrás
           },
         );
@@ -1048,12 +1053,15 @@
           const conAcciones = !!(opciones && opciones.conAcciones);
           const map = L.map(contenedorId, {
             zoomControl: true,
-            scrollWheelZoom: true
+            scrollWheelZoom: true,
+            maxZoom: 19
           }).setView(centroCorrientes, 7);
 
           const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; Esri, Maxar, Earthstar Geographics',
-            maxZoom: 18
+            // Evita el "Map data not yet available": más allá del 17 se reescala la imagen
+            maxNativeZoom: 17,
+            maxZoom: 19
           });
           const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors',
@@ -1061,7 +1069,7 @@
           });
           const esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; Esri',
-            maxZoom: 18
+            maxZoom: 19
           });
           const sateliteHibrido = L.layerGroup([esriSatellite, esriLabels]);
           sateliteHibrido.addTo(map);
@@ -1186,7 +1194,7 @@
 
             layerControl.addOverlay(lotesLayer, "🌾 Lotes Monitoreados");
             if (data.features && data.features.length > 0) {
-              map.fitBounds(lotesLayer.getBounds(), { padding: [40, 40] });
+              map.fitBounds(lotesLayer.getBounds(), { padding: [40, 40], maxZoom: 17 });
             }
           }
 
