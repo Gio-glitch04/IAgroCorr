@@ -75,27 +75,4 @@
         </div>
     </nav>
 
-    <script>
-        // Interruptor de modo oscuro. El tema inicial ya lo aplicó theme_init.html en el <head>.
-        (function () {
-            const btn = document.getElementById("themeToggle");
-            if (!btn) return;
-            const root = document.documentElement;
-
-            function actualizarTitulo() {
-                const oscuro = root.getAttribute("data-bs-theme") === "dark";
-                btn.title = oscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro";
-                btn.setAttribute("aria-pressed", oscuro ? "true" : "false");
-            }
-            actualizarTitulo();
-
-            btn.addEventListener("click", function () {
-                const nuevo = root.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
-                root.classList.add("theme-transition");
-                root.setAttribute("data-bs-theme", nuevo);
-                try { localStorage.setItem("iagrocorr-tema", nuevo); } catch (e) {}
-                actualizarTitulo();
-                window.setTimeout(function () { root.classList.remove("theme-transition"); }, 350);
-            });
-        })();
-    </script>
+    {% include 'accounts/theme_toggle_script.html' %}

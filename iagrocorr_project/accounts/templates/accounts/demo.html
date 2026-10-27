@@ -5,155 +5,264 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IAgroCorr | Inteligencia Territorial</title>
+    <meta name="description" content="IAgroCorr: monitoreo de lotes, gemelos agroclimáticos y alertas ambientales para el agro de Corrientes y el Litoral argentino.">
     <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
-    <style>
-        :root {
-            --primary: #4caf50;
-            --secondary: #2e7d32;
-            --bg-dark: #0b1f15;
-            --text-light: #e0e0e0;
-            --card-bg: rgba(255, 255, 255, 0.05);
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
-        header {
-            text-align: center;
-            padding: 80px 20px 40px;
-            border-bottom: 1px solid var(--secondary);
-        }
-        h1 { color: var(--primary); font-size: 3em; margin-bottom: 10px; }
-        h2 { color: #a5d6a7; font-weight: 300; margin-top: 0; }
-        .badge {
-            display: inline-block;
-            background: var(--secondary);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            margin: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--secondary);
-            border-radius: 12px;
-            padding: 25px;
-            transition: transform 0.3s ease;
-        }
-        .card:hover { transform: translateY(-5px); }
-        .card h3 { color: var(--primary); margin-top: 0; }
-        
-        /* Spinner */
-        .spinner {
-            margin: 30px auto;
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(76, 175, 80, 0.2);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
-        footer {
-            text-align: center;
-            padding: 40px;
-            font-size: 0.9em;
-            color: #888;
-            border-top: 1px solid var(--secondary);
-        }
-        a.btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 25px;
-            background-color: var(--primary);
-            color: var(--bg-dark);
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-        a.btn:hover { background-color: #66bb6a; }
-    </style>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    {% include 'accounts/theme_init.html' %}
+    <link rel="stylesheet" href="{% static 'css/styles2.css' %}?v=1.7">
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}?v=1.0">
 </head>
-<body>
+<body class="landing">
 
     {% include 'accounts/contact_alert.html' %}
 
-    <header>
-        <h1>IAgroCorr</h1>
-        <h2>Inteligencia Territorial para el Litoral Argentico</h2>
-        <div class="spinner"></div>
-        <p><strong>Calibrando modelos geoespaciales... El prototipo interactivo estará disponible pronto.</strong></p>
-        <a href="{% url 'login' %}" class="btn">Ser Beta Tester</a>
-    </header>
+    <!-- Barra superior: misma línea que la del panel -->
+    <nav class="navbar-custom landing-nav sticky-top">
+        <div class="landing-container d-flex align-items-center gap-3">
+            <a class="navbar-brand-custom text-decoration-none" href="{% url 'demo' %}">
+                <img src="{% static 'images/iagrocorr_logo_n.png' %}" height="35" alt="">
+                IAgroCorr
+            </a>
 
-    <div class="container">
-        <h2 style="text-align: center; color: var(--primary);">Impacto y Funcionalidades</h2>
-        <div class="grid">
-            <div class="card">
-                <h3>📊 Análisis de Rinde</h3>
-                <p>Monitoreo preciso del rendimiento de cultivos, evaluación de costos operativos y herramientas avanzadas para la planificación de futuras campañas.</p>
-            </div>
-            <div class="card">
-                <h3>🌍 Gemelos Globales</h3>
-                <p>Nuestra IA compara las características de tu suelo con regiones de todo el mundo para descubrir nuevos mercados y cultivos de rotación con alto potencial.</p>
-            </div>
-            <div class="card">
-                <h3>🌱 Proyección Ambiental</h3>
-                <p>Sistemas de alerta temprana de estrés hídrico y evaluación de impacto ambiental, facilitando la adopción de prácticas sustentables.</p>
+            <ul class="landing-links d-none d-lg-flex">
+                <li><a href="#funcionalidades">Funcionalidades</a></li>
+                <li><a href="#tecnologia">Tecnología</a></li>
+                <li><a href="#hoja-de-ruta">Hoja de ruta</a></li>
+            </ul>
+
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="nav-icon-btn theme-toggle" type="button" id="themeToggle" title="Cambiar a modo oscuro" aria-label="Cambiar entre modo claro y oscuro">
+                    <i class="bi bi-moon-stars theme-icon-dark"></i>
+                    <i class="bi bi-sun theme-icon-light"></i>
+                </button>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn-landing btn-landing-primary">Ir al panel</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn-landing btn-landing-ghost">Ingresar</a>
+                    <a href="{% url 'register' %}" class="btn-landing btn-landing-primary d-none d-sm-inline-flex">Crear cuenta</a>
+                {% endif %}
             </div>
         </div>
+    </nav>
 
-        <h2 style="text-align: center; color: var(--primary); margin-top: 60px;">Tecnología y Datos</h2>
-        <div style="text-align: center;">
-            <span class="badge">Google Earth Engine</span>
-            <span class="badge">IDERA & INTA</span>
-            <span class="badge">Python (Machine Learning)</span>
-            <span class="badge">PostGIS</span>
-            <span class="badge">FastAPI</span>
-            <span class="badge">Docker</span>
+    <main>
+        <!-- Portada -->
+        <section class="landing-hero">
+            <div class="landing-container hero-grid">
+                <div>
+                    <span class="status-pill"><span class="status-dot"></span> Prototipo en desarrollo · Beta abierta</span>
+                    <h1 class="hero-title">Inteligencia territorial para el agro del Litoral argentino</h1>
+                    <p class="hero-lead">
+                        IAgroCorr reúne imágenes satelitales, capas de suelo y datos climáticos de Corrientes
+                        para seguir tus lotes, anticipar riesgos ambientales y encontrar regiones del mundo
+                        con condiciones parecidas a las tuyas.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'dashboard' %}" class="btn-landing btn-landing-primary btn-landing-lg">
+                                <i class="bi bi-columns-gap"></i> Ir al panel
+                            </a>
+                        {% else %}
+                            <a href="{% url 'register' %}" class="btn-landing btn-landing-primary btn-landing-lg">
+                                Ser beta tester <i class="bi bi-arrow-right"></i>
+                            </a>
+                            <a href="{% url 'login' %}" class="btn-landing btn-landing-outline btn-landing-lg">Ya tengo cuenta</a>
+                        {% endif %}
+                    </div>
+                    <p class="hero-note">
+                        <i class="bi bi-info-circle"></i>
+                        Estamos calibrando los modelos geoespaciales: algunas funciones todavía están en prueba.
+                    </p>
+                </div>
+
+                <!-- Vista previa: reproduce la tabla de Gemelos Globales del panel -->
+                <div class="preview-card" aria-label="Vista previa de la plataforma">
+                    <div class="preview-head">
+                        <div>
+                            <div class="preview-eyebrow">Gemelos globales</div>
+                            <div class="preview-title">Regiones parecidas a Corrientes</div>
+                        </div>
+                        <i class="bi bi-globe2 preview-head-icon"></i>
+                    </div>
+                    <div class="preview-metrics">
+                        <div class="preview-metric">
+                            <span class="metric-title">Similitud</span>
+                            <strong>95%</strong>
+                        </div>
+                        <div class="preview-metric">
+                            <span class="metric-title">Humedad</span>
+                            <strong>74%</strong>
+                        </div>
+                        <div class="preview-metric">
+                            <span class="metric-title">NDVI</span>
+                            <strong>0.63</strong>
+                        </div>
+                    </div>
+                    <ul class="preview-rows">
+                        <li>
+                            <span class="preview-place">Uruguaiana / Itaqui<small>Brasil</small></span>
+                            <span class="preview-bar"><span style="width: 95%"></span></span>
+                            <span class="preview-pct">95%</span>
+                        </li>
+                        <li>
+                            <span class="preview-place">Laguna Merín<small>Uruguay</small></span>
+                            <span class="preview-bar"><span style="width: 88%"></span></span>
+                            <span class="preview-pct">88%</span>
+                        </li>
+                        <li>
+                            <span class="preview-place">Delta del Mississippi<small>EE.UU.</small></span>
+                            <span class="preview-bar"><span style="width: 85%"></span></span>
+                            <span class="preview-pct">85%</span>
+                        </li>
+                        <li>
+                            <span class="preview-place">Provincia de Hunan<small>China</small></span>
+                            <span class="preview-bar"><span style="width: 82%"></span></span>
+                            <span class="preview-pct">82%</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Funcionalidades -->
+        <section class="landing-section" id="funcionalidades">
+            <div class="landing-container">
+                <div class="section-head">
+                    <h2 class="section-title">Qué podés hacer con IAgroCorr</h2>
+                    <p class="section-lead">Tres herramientas pensadas para productores, técnicos y asesores de la región.</p>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <article class="feature-card">
+                            <span class="feature-icon"><i class="bi bi-bar-chart-line"></i></span>
+                            <h3>Análisis de rinde</h3>
+                            <p>Monitoreo del rendimiento de cultivos, evaluación de costos operativos y herramientas para planificar las próximas campañas.</p>
+                        </article>
+                    </div>
+                    <div class="col-md-4">
+                        <article class="feature-card">
+                            <span class="feature-icon"><i class="bi bi-globe2"></i></span>
+                            <h3>Gemelos globales</h3>
+                            <p>Comparamos las características de tu suelo y clima con regiones de todo el mundo para descubrir mercados y cultivos de rotación con potencial.</p>
+                        </article>
+                    </div>
+                    <div class="col-md-4">
+                        <article class="feature-card">
+                            <span class="feature-icon"><i class="bi bi-droplet-half"></i></span>
+                            <h3>Proyección ambiental</h3>
+                            <p>Alertas tempranas de estrés hídrico y evaluación del impacto ambiental de cada lote, para facilitar prácticas sustentables.</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tecnología y datos -->
+        <section class="landing-section landing-section-alt" id="tecnologia">
+            <div class="landing-container">
+                <div class="row g-4 align-items-start">
+                    <div class="col-lg-5">
+                        <h2 class="section-title">Tecnología y fuentes de datos</h2>
+                        <p class="section-lead">
+                            Trabajamos con datos públicos y abiertos, procesados con herramientas de análisis
+                            geoespacial y aprendizaje automático.
+                        </p>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="tech-list">
+                            <div class="tech-item">
+                                <i class="bi bi-hdd-network"></i>
+                                <div><strong>Google Earth Engine</strong><span>Imágenes satelitales e índices de vegetación</span></div>
+                            </div>
+                            <div class="tech-item">
+                                <i class="bi bi-layers"></i>
+                                <div><strong>IDERA e INTA</strong><span>Capas de suelo, uso del territorio y límites</span></div>
+                            </div>
+                            <div class="tech-item">
+                                <i class="bi bi-cpu"></i>
+                                <div><strong>Python</strong><span>Modelos de machine learning</span></div>
+                            </div>
+                            <div class="tech-item">
+                                <i class="bi bi-database"></i>
+                                <div><strong>PostGIS</strong><span>Base de datos espacial de lotes y zonas</span></div>
+                            </div>
+                            <div class="tech-item">
+                                <i class="bi bi-diagram-3"></i>
+                                <div><strong>Django y FastAPI</strong><span>Plataforma web y servicios de datos</span></div>
+                            </div>
+                            <div class="tech-item">
+                                <i class="bi bi-box-seam"></i>
+                                <div><strong>Docker</strong><span>Despliegue reproducible</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hoja de ruta -->
+        <section class="landing-section" id="hoja-de-ruta">
+            <div class="landing-container">
+                <div class="section-head">
+                    <h2 class="section-title">Hoja de ruta</h2>
+                    <p class="section-lead">Las próximas etapas del proyecto.</p>
+                </div>
+                <ol class="roadmap">
+                    <li class="roadmap-step">
+                        <span class="roadmap-num">1</span>
+                        <div>
+                            <h3>Integración de datos</h3>
+                            <p>Estandarizar las capas vectoriales de IDECorr con los datos ráster de Google Earth Engine en un único almacén de datos.</p>
+                        </div>
+                    </li>
+                    <li class="roadmap-step">
+                        <span class="roadmap-num">2</span>
+                        <div>
+                            <h3>Interfaz y visualización</h3>
+                            <p>Mapa interactivo web sobre lotes de prueba, con capas ambientales y seguimiento por lote.</p>
+                        </div>
+                    </li>
+                    <li class="roadmap-step">
+                        <span class="roadmap-num">3</span>
+                        <div>
+                            <h3>Modelado (CRISP-DM)</h3>
+                            <p>Entrenamiento de los algoritmos de machine learning y definición de las métricas de rendimiento.</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Llamado final -->
+        <section class="landing-section pt-0">
+            <div class="landing-container">
+                <div class="cta-card">
+                    <div>
+                        <h2 class="section-title mb-1">¿Querés probar la plataforma?</h2>
+                        <p class="section-lead mb-0">Sumate a la beta o escribinos a <a href="mailto:contacto@iagrocorr.com.ar">contacto@iagrocorr.com.ar</a>.</p>
+                    </div>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="btn-landing btn-landing-primary btn-landing-lg">Ir al panel</a>
+                    {% else %}
+                        <a href="{% url 'register' %}" class="btn-landing btn-landing-primary btn-landing-lg">Ser beta tester</a>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="landing-footer">
+        <div class="landing-container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <span class="footer-brand">
+                <img src="{% static 'images/iagrocorr_logo_n.png' %}" height="22" alt=""> IAgroCorr
+            </span>
+            <span>Proyecto Emprende U 2026 · Licenciatura en Sistemas</span>
         </div>
-
-        <h2 style="text-align: center; color: var(--primary); margin-top: 60px;">Próximos Pasos (Roadmap)</h2>
-        <div class="grid">
-            <div class="card">
-                <h3>1. Integración de Datos (Data Warehouse)</h3>
-                <p>Estandarización de las capas vectoriales de IDECorr con los datos ráster de GEE.</p>
-            </div>
-            <div class="card">
-                <h3>2. Interfaz y Visualización</h3>
-                <p>Lanzamiento del primer mapa interactivo web sobre lotes de prueba.</p>
-            </div>
-            <div class="card">
-                <h3>3. Modelado (CRISP-DM)</h3>
-                <p>Entrenamiento de los algoritmos de Machine Learning y establecimiento de métricas de rendimiento.</p>
-            </div>
-        </div>
-    </div>
-
-    <footer>
-        <p>Proyecto Emprende U 2026 | Licenciatura en Sistemas</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% include 'accounts/theme_toggle_script.html' %}
 </body>
 </html>
