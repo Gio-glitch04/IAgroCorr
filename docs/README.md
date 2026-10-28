@@ -12,6 +12,7 @@ Esta carpeta implementa la metodología **Spec-Driven Development + Memory Bank*
 | **[`memory.md`](./memory.md)** | **Memoria Activa (Contexto Actual):** Estado al día de la rama `main`, diferenciación entre funciones reales y maquetas (*Mago de Oz*), decisiones técnicas vigentes y próximos pasos del Sprint. | **Al abrir cada sesión de trabajo** (humana o con asistentes de IA) y al cerrar un bloque de cambios o Pull Request. |
 | **[`testing.md`](./testing.md)** | **Pruebas, Validación y Entornos:** Comandos para Docker, Dev Container y entorno local Windows; checklist de QA geoespacial/UI y lineamientos para pruebas automatizadas en GeoDjango. | Antes de abrir o fusionar un Pull Request y al validar cambios en PostGIS, motor de reglas o mapas Leaflet. |
 | **[`review.md`](./review.md)** | **Revisión, Hitos y Deuda Técnica:** Historial consolidado de avances del equipo, matriz de cumplimiento de objetivos del Anexo II y auditoría de mejoras pendientes. | Al cierre de cada Sprint quincenal, revisión con el Profesor Orientador o entregas parciales del PFC. |
+| **[`presentacion/defensa_preliminar.html`](./presentacion/defensa_preliminar.html)** | **Presentación Interactiva 16:9 (Simulacro de Defensa PFC):** 10 diapositivas alineadas al Anexo III con cronómetro de 10 minutos, guion por orador (`Tecla N`) y exportación directa a PDF (`Ctrl + P`). | Para ensayar tiempos, proyectar en clase o actualizar avances previos a la defensa. |
 
 ---
 

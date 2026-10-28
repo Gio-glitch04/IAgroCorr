@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IAgroCorr — Defensa Preliminar PFC (FACENA - UNNE)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sanchez:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-stage: #F2F3F2;
+      --bg-outer: #1B1F1D;
+      --surface-white: #FFFFFF;
+      --surface-soft: #E4E6E4;
+      --surface-mint: #D7F5DA;
+      --surface-mint-border: #B3E8B9;
+      --green-brand: #0DB14B;
+      --green-dark: #088738;
+      --green-deep: #065F28;
+      --text-main: #141715;
+      --text-muted: #49524C;
+      --text-soft: #68736C;
+      --amber: #E59400;
+      --red: #D9383A;
+      --border-subtle: rgba(20, 23, 21, 0.09);
+      --shadow-card: 0 10px 28px rgba(15, 28, 20, 0.06);
+      --radius-lg: 26px;
+      --radius-md: 18px;
+      --radius-badge: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-outer);
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Contenedor escalable 16:9 exacto (1280 x 720) */
+    #viewport {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #deck {
+      width: 1280px;
+      height: 720px;
+      background: var(--bg-stage);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+      transform-origin: center center;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      width: 1280px;
+      height: 720px;
+      padding: 44px 62px 52px;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--bg-stage);
+      opacity: 0;
+      transition: opacity 0.22s ease;
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* Cabecera estándar de lámina */
+    .slide-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .slide-chapter {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--green-dark);
+      background: rgba(13, 177, 75, 0.11);
+      padding: 6px 14px;
+      border-radius: 999px;
+    }
+
+    .slide-brand-mini {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Sanchez', Georgia, serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text-main);
+      opacity: 0.82;
+    }
+
+    .slide-brand-mini img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+
+    .slide-title {
+      font-size: 46px;
+      font-weight: 800;
+      color: var(--green-brand);
+      letter-spacing: -0.02em;
+      line-height: 1.08;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .slide-title.left {
+      text-align: left;
+    }
+
+    .slide-subtitle {
+      text-align: center;
+      font-size: 16px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 18px;
+    }
+
+    /* Tarjetas con insignia superior (Estilo Slides 2 y 3 del PDF) */
+    .cards-row {
+      display: grid;
+      gap: 22px;
+      flex: 1;
+      align-items: stretch;
+      margin-top: 28px;
+    }
+
+    .cards-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .cards-row.cols-4 { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+
+    .num-card {
+      background: var(--surface-white);
+      border-radius: var(--radius-lg);
+      padding: 48px 22px 24px;
+      position: relative;
+      text-align: center;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .num-card.mint {
+      background: var(--surface-mint);
+      border-color: var(--surface-mint-border);
+    }
+
+    .num-card.soft {
+      background: var(--surface-soft);
+    }
+
+    .num-badge {
+      width: 68px;
+      height: 68px;
+      background: var(--green-brand);
+      color: #FFFFFF;
+      font-family: 'Sanchez', Georgia, serif;
+      font-size: 28px;
+      font-weight: 700;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 8px 18px rgba(13, 177, 75, 0.28);
+    }
+
+    .num-card h3 {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    .num-card p {
+      font-size: 14.5px;
+      line-height: 1.48;
+      color: var(--text-muted);
+    }
+
+    .cite-tag {
+      margin-top: 14px;
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green-dark);
+      background: rgba(13, 177, 75, 0.1);
+      padding: 5px 10px;
+      border-radius: 8px;
+    }
+
+    /* Bloques Bento (Estilo Slide 4 Metodologías) */
+    .bento-hero {
+      background: var(--green-brand);
+      color: #FFFFFF;
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: 0 12px 28px rgba(13, 177, 75, 0.22);
+    }
+
+    .bento-hero h2 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      margin-bottom: 10px;
+    }
+
+    .bento-hero p {
+      font-size: 15px;
+      line-height: 1.45;
+      color: rgba(255, 255, 255, 0.93);
+    }
+
+    .bento-card {
+      background: var(--surface-soft);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .bento-card.white {
+      background: var(--surface-white);
+      box-shadow: var(--shadow-card);
+    }
+
+    .bento-card.mint {
+      background: var(--surface-mint);
+      border-color: var(--surface-mint-border);
+    }
+
+    .bento-card h3 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 7px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bento-card p {
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--text-muted);
+    }
+
+    /* Pastilla verde principal */
+    .green-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--green-brand);
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 13px 30px;
+      border-radius: 999px;
+      box-shadow: 0 10px 24px rgba(13, 177, 75, 0.28);
+    }
+
+    /* Pasos numerados laterales (Estilo Slide 15 Pasos a Seguir) */
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: var(--surface-white);
+      padding: 16px 20px;
+      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-card);
+    }
+
+    .step-badge {
+      width: 54px;
+      height: 54px;
+      flex-shrink: 0;
+      border-radius: 16px;
+      background: var(--green-brand);
+      color: #FFFFFF;
+      font-family: 'Sanchez', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-item h4 {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      color: var(--text-main);
+    }
+
+    .step-item p {
+      font-size: 13.5px;
+      line-height: 1.42;
+      color: var(--text-muted);
+    }
+
+    /*SLIDE 1: CARÁTULA */
+    .cover-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .cover-inst {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .cover-brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      margin-bottom: 10px;
+    }
+
+    .cover-brand-row img {
+      width: 84px;
+      height: 84px;
+      object-fit: contain;
+    }
+
+    .cover-wordmark {
+      font-family: 'Sanchez', Georgia, serif;
+      font-size: 86px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .cover-sub {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--green-brand);
+      text-transform: uppercase;
+      letter-spacing: 0.24em;
+      margin-bottom: 24px;
+    }
+
+    .cover-meta-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 28px;
+      text-align: left;
+    }
+
+    .meta-box {
+      background: var(--surface-white);
+      border-radius: 18px;
+      padding: 15px 20px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-card);
+    }
+
+    .meta-box .meta-label {
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--green-dark);
+      margin-bottom: 5px;
+    }
+
+    .meta-box .meta-val {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+
+    [contenteditable="true"] {
+      border-bottom: 1px dashed rgba(13, 177, 75, 0.55);
+      outline: none;
+      padding: 0 2px;
+      border-radius: 4px;
+    }
+
+    [contenteditable="true"]:focus {
+      background: #E9FAEC;
+      border-bottom-style: solid;
+    }
+
+    /* Barras de progreso */
+    .prog-track {
+      width: 100%;
+      height: 11px;
+      background: #DDE2DE;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: var(--green-brand);
+      border-radius: 999px;
+    }
+
+    .prog-fill.amber {
+      background: var(--amber);
+    }
+
+    /* Chips y etiquetas */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    .chip.green {
+      background: var(--green-brand);
+      color: #FFFFFF;
+      border-color: var(--green-brand);
+    }
+
+    .chip.soft-green {
+      background: #E1F8E5;
+      color: var(--green-deep);
+      border-color: #B7E9BF;
+    }
+
+    .chip.amber {
+      background: #FFF3D6;
+      color: #945E00;
+      border-color: #F6D992;
+    }
+
+    .chip.red {
+      background: #FFE5E5;
+      color: #A61E22;
+      border-color: #F5B7B8;
+    }
+
+    /* HUD flotante de control y cronómetro de 10 minutos */
+    #hud {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(20, 24, 21, 0.92);
+      backdrop-filter: blur(10px);
+      color: #FFFFFF;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-size: 13px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      transition: opacity 0.2s ease;
+    }
+
+    #hud.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .hud-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+
+    .hud-btn:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    .hud-btn.active {
+      background: var(--green-brand);
+      color: #FFFFFF;
+    }
+
+    .hud-sep {
+      width: 1px;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    #timerDisplay {
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(13, 177, 75, 0.22);
+      color: #63F59A;
+    }
+
+    #timerDisplay.warn {
+      background: rgba(229, 148, 0, 0.28);
+      color: #FFD166;
+    }
+
+    #timerDisplay.danger {
+      background: rgba(217, 56, 58, 0.35);
+      color: #FF8587;
+    }
+
+    #speakerBadge {
+      font-size: 12px;
+      font-weight: 700;
+      color: #D7E2DA;
+      padding: 0 4px;
+    }
+
+    /* Cajón de Notas del Orador */
+    #notesDrawer {
+      position: fixed;
+      left: 50%;
+      bottom: 62px;
+      transform: translateX(-50%);
+      width: min(920px, 92vw);
+      background: rgba(18, 22, 19, 0.96);
+      color: #F1F5F2;
+      border: 1px solid rgba(13, 177, 75, 0.45);
+      border-radius: 18px;
+      padding: 16px 22px;
+      z-index: 99;
+      display: none;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+    }
+
+    #notesDrawer.open {
+      display: block;
+    }
+
+    #notesHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #63F59A;
+      font-weight: 800;
+    }
+
+    #notesBody {
+      font-size: 14px;
+      line-height: 1.55;
+      color: #E5ECE7;
+    }
+
+    /* Exportación limpia a PDF 16:9 (Ctrl + P) */
+    @page {
+      size: 1280px 720px;
+      margin: 0;
+    }
+
+    @media print {
+      html, body {
+        width: 1280px;
+        height: auto;
+        overflow: visible !important;
+        background: var(--bg-stage) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      #viewport {
+        display: block !important;
+        width: 1280px !important;
+        height: auto !important;
+      }
+
+      #deck {
+        width: 1280px !important;
+        height: auto !important;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      .slide {
+        position: relative !important;
+        display: flex !important;
+        opacity: 1 !important;
+        page-break-after: always;
+        break-after: page;
+        width: 1280px !important;
+        height: 720px !important;
+      }
+
+      #hud, #notesDrawer {
+        display: none !important;
+      }
+
+      [contenteditable="true"] {
+        border-bottom: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="viewport">
+  <div id="deck">
+
+    <!-- =====================================================
+         SLIDE 1: CARÁTULA OFICIAL (ANEXO III)
+         ===================================================== -->
+    <section class="slide active" data-speaker="Julio César Pintos" data-time="0:30 (Acum: 0:30)" data-notes="Presentar al equipo con sobriedad y definir el proyecto en una frase contundente: «IAgroCorr es una plataforma Web GIS de Inteligencia Territorial que integra teledetección satelital, cartografía oficial y modelos de IA para optimizar decisiones productivas y resguardar ecosistemas sensibles en la provincia de Corrientes».">
+      <div class="slide-top">
+        <span class="slide-chapter">Universidad Nacional del Nordeste · FACENA</span>
+        <span class="slide-chapter" style="background: rgba(20,23,21,0.07); color: var(--text-main);">Licenciatura en Sistemas · 2026</span>
+      </div>
+
+      <div class="cover-center">
+        <div class="cover-inst">Proyecto Final de Carrera · Instancia Preliminar (Simulacro de Defensa)</div>
+
+        <div class="cover-brand-row">
+          <img src="../../iagrocorr_project/static/images/iagrocorr_logo_n.png" alt="Logo IAgroCorr" onerror="this.style.display='none'" />
+          <h1 class="cover-wordmark">IAgroCorr</h1>
+        </div>
+
+        <div class="cover-sub">Inteligencia Territorial para el Sector Agropecuario</div>
+
+        <div class="green-pill">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 12 2.1 10.5"/><path d="m12 12 4.3 8.9"/></svg>
+          <span>GIS · Machine Learning · Ciencia de Datos</span>
+        </div>
+
+        <div class="cover-meta-grid">
+          <div class="meta-box">
+            <div class="meta-label">Autores Desarrolladores</div>
+            <div class="meta-val">
+              Giovanni Oscar Piazza <span style="color:var(--text-soft); font-weight:500;">(LU 57847)</span><br/>
+              Julio César Pintos <span style="color:var(--text-soft); font-weight:500;">(LU 57904)</span>
+            </div>
+          </div>
+
+          <div class="meta-box">
+            <div class="meta-label">Dirección y Cátedra</div>
+            <div class="meta-val">
+              <strong>Orientador:</strong> Prof. Aldo José Mettini<br/>
+              <strong>Coordinación:</strong> <span id="editCoord" contenteditable="true" spellcheck="false">[Completar Coordinador/a]</span>
+            </div>
+          </div>
+
+          <div class="meta-box">
+            <div class="meta-label">Evaluación Preliminar</div>
+            <div class="meta-val">
+              <strong>Tribunal:</strong> <span id="editTribunal" contenteditable="true" spellcheck="false">[Completar Docentes Evaluadores]</span><br/>
+              <span style="color:var(--green-dark); font-size:12.5px; font-weight:700;">Corrientes, Argentina · Octubre 2026</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         SLIDE 2: CAP. 1 — PROBLEMA Y ESTADO DEL ARTE
+         ===================================================== -->
+    <section class="slide" data-speaker="Julio César Pintos" data-time="1:15 (Acum: 1:45)" data-notes="Recorrer las 4 tarjetas como una cadena de cuellos de botella: 1) Sobran datos satelitales en la nube (GEE/Sentinel-2), pero el productor no puede leerlos en crudo. 2) Las bases relacionales comunes no escalan en topología, por eso PostGIS (OGC/GiST). 3) La ciencia de datos tabular falla en el agro sin contexto espacial: de ahí el marco del Handbook of GeoAI (Gao et al., 2023) y Karmaoui et al. (2023). 4) El vacío regional: ninguna herramienta accesible une rinde + gemelos globales + normativa ambiental local.">
+      <div>
+        <div class="slide-top">
+          <span class="slide-chapter">Capítulo 1 · Introducción y Estado del Arte</span>
+          <span class="slide-brand-mini"><img src="../../iagrocorr_project/static/images/iagrocorr_logo_n.png" alt="" onerror="this.style.display='none'"/>IAgroCorr</span>
+        </div>
+        <h2 class="slide-title">Estado del Arte y Brecha</h2>
+        <p class="slide-subtitle">De la abundancia de datos satelitales crudos a la Inteligencia Artificial Geoespacial (GeoIA) aplicada</p>
+      </div>
+
+      <div class="cards-row cols-4">
+        <article class="num-card">
+          <div class="num-badge">01</div>
+          <div>
+            <h3>Cloud GIS y Satélites</h3>
+            <p><strong>Google Earth Engine</strong> y misiones <em>Sentinel-2</em> procesan petabytes de índices espectrales (<strong>NDVI, NDWI</strong>), pero resultan inaccesibles sin perfil técnico.</p>
+          </div>
+          <span class="cite-tag">Zhao et al., 2021 · Obiorah, 2025</span>
+        </article>
+
+        <article class="num-card">
+          <div class="num-badge">02</div>
+          <div>
+            <h3>Bases Espaciales OGC</h3>
+            <p>Superando los límites de los RDBMS clásicos, <strong>PostGIS</strong> incorpora tipos geométricos, índices espaciales <strong>GiST</strong> y álgebra topológica exacta.</p>
+          </div>
+          <span class="cite-tag">Safari et al., 2021 · Hou, 2025</span>
+        </article>
+
+        <article class="num-card">
+          <div class="num-badge">03</div>
+          <div>
+            <h3>Paradigma GeoIA</h3>
+            <p>A diferencia del ML tabular, la <strong>GeoIA</strong> integra explícitamente espacio, tiempo y vecindad topológica en la detección de anomalías y similitud.</p>
+          </div>
+          <span class="cite-tag">Gao, Hu &amp; Li, 2023 · Karmaoui, 2023</span>
+        </article>
+
+        <article class="num-card mint">
+          <div class="num-badge">04</div>
+          <div>
+            <h3>Vacío en el NEA</h3>
+            <p>El software comercial prioriza rinde pampeano y <strong>no articula monitoreo satelital + diversificación global + protección normativa de humedales</strong>.</p>
+          </div>
+          <span class="cite-tag" style="background:#FFFFFF;">Oportunidad IAgroCorr</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         SLIDE 3: CAP. 1 — FUNDAMENTACIÓN Y OBJETIVOS
+         ===================================================== -->
+    <section class="slide" data-speaker="Julio César Pintos" data-time="0:45 (Acum: 2:30)" data-notes="Destacar por qué Corrientes es un caso único: arroz, forestación, citrus y horticultura conviven pegados a los Esteros del Iberá (Sitio Ramsar) y grandes ríos. Luego presentar el Objetivo General y cómo los 6 Objetivos Específicos del Anexo II se agrupan en 3 pilares verificables: Data Warehouse + Web GIS, Semáforo de Anomalías y Gemelos Climáticos.">
+      <div>
+        <div class="slide-top">
+          <span class="slide-chapter">Capítulo 1 · Fundamentación y Objetivos</span>
+          <span class="slide-brand-mini"><img src="../../iagrocorr_project/static/images/iagrocorr_logo_n.png" alt="" onerror="this.style.display='none'"/>IAgroCorr</span>
+        </div>
+        <h2 class="slide-title">Fundamentación y Objetivos</h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1.02fr 1.25fr; gap: 24px; flex: 1; margin-top: 10px;">
+        <!-- Columna Fundamentación -->
+        <div class="bento-hero" style="justify-content: space-between;">
+          <div>
+            <span style="font-size:12px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; opacity:0.88;">¿Por qué en Corrientes?</span>
+            <h2 style="font-size:36px; margin-top:6px;">Producción y Humedales en Equilibrio</h2>
+            <p style="margin-top:10px;">Corrientes combina cadenas intensivas (arroz, forestal, tabaco, citrus) junto a los <strong>Esteros del Iberá (Sitio Ramsar)</strong> y los ríos Paraná, Uruguay, Corriente y Santa Lucía.</p>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+            <div style="background:rgba(255,255,255,0.14); padding:12px 15px; border-radius:16px; font-size:13.5px; line-height:1.4;">
+              <strong>Impacto Regional (Banco Mundial, 2024):</strong> Reducir la brecha tecnológica en explotaciones medianas/familiares y certificar uso racional de insumos.
+            </div>
+            <div style="background:rgba(255,255,255,0.14); padding:12px 15px; border-radius:16px; font-size:13.5px; line-height:1.4;">
+              <strong>Relevancia Informática:</strong> Arquitectura híbrida <em>Cloud/Local</em> para integrar vectores OGC, series satelitales y modelos GeoIA.
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Objetivos -->
+        <div style="display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
+          <div class="bento-card white" style="padding:18px 22px; border-left: 6px solid var(--green-brand);">
+            <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--green-dark); margin-bottom:4px;">Objetivo General (Anexo II)</div>
+            <p style="font-size:14.5px; color:var(--text-main); font-weight:600;">Desarrollar una plataforma de Inteligencia Territorial que integre datos satelitales, cartografía oficial y aprendizaje automático para optimizar decisiones estratégicas, diversificación productiva y gestión de riesgos ambientales en Corrientes.</p>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">01</div>
+            <div>
+              <h4>Data Warehouse Espacial y Plataforma Web <span class="chip soft-green">OE2 · OE3 · OE6</span></h4>
+              <p>Integrar capas de IDERA, IDECorr, INTA y GEE en PostGIS bajo una app web contenedorizada, portable y adaptable a escritorio y móvil.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">02</div>
+            <div>
+              <h4>Detección Temprana en Formato Semáforo <span class="chip soft-green">OE1 · OE4</span></h4>
+              <p>Detectar anomalías vegetativas (NDVI/NDWI) y riesgos fitosanitarios traduciendo métricas complejas a alertas simples (Verde, Amarillo, Rojo).</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">03</div>
+            <div>
+              <h4>Motor de Gemelos Climáticos Globales <span class="chip soft-green">OE5</span></h4>
+              <p>Identificar zonas productivas mundiales análogas mediante <em>clustering</em> edafoclimático para recomendar alternativas de diversificación.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         SLIDE 4: CAP. 2 — METODOLOGÍA E ING. DE REQUERIMIENTOS
+         ===================================================== -->
+    <section class="slide" data-speaker="Giovanni Oscar Piazza" data-time="1:00 (Acum: 3:30)" data-notes="Explicar cómo articulamos DSR, Scrum Adaptado en dupla (Sprints quincenales en Jira y PRs en GitHub) y CRISP-DM. Remarcar que no programamos a ciegas: hicimos 5 entrevistas clave (INTA Corrientes, Grupo Servisoft Chaco y mentores de Startup Pampa) de donde salieron requerimientos directos como IA Explicable (no caja negra), semáforo visual y privacidad estricta del lote.">
+      <div>
+        <div class="slide-top">
+          <span class="slide-chapter">Capítulo 2 · Metodología e Ingeniería de Requerimientos</span>
+          <span class="slide-brand-mini"><img src="../../iagrocorr_project/static/images/iagrocorr_logo_n.png" alt="" onerror="this.style.display='none'"/>IAgroCorr</span>
+        </div>
+      </div>
+
+      <!-- Grilla Bento inspirada en Slide 4 del equipo -->
+      <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; margin-bottom: 18px;">
+        <div class="bento-hero" style="padding: 24px 30px;">
+          <h2 style="font-size: 44px; margin-bottom: 8px;">Metodologías</h2>
+          <p>Combinación de <strong>Design Science Research (DSR)</strong> para construir y evaluar el artefacto tecnológico, <strong>Scrum Adaptado</strong> en dupla (Sprints quincenales en Jira y PRs en GitHub) y <strong>CRISP-DM</strong> guiando el ciclo de datos.</p>
+        </div>
+
+        <div class="bento-card" style="padding: 20px 24px;">
+          <h3>Ciclo Incremental de Datos</h3>
+          <p><strong>1. Educción</strong> con actores reales &rarr; <strong>2. ETL Medallion</strong> (Bronce crudo, Plata armonizado, Oro en DW) &rarr; <strong>3. Modelado GeoIA</strong> &rarr; <strong>4. Prototipado Web</strong>.</p>
+        </div>
+      </div>
+
+      <div style="font-size:12.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--green-dark); margin-bottom:10px;">
+        Educción Empírica (Fases 1 y 2 de CRISP-DM) — 5 Entrevistas traducidas a Requerimientos de Software
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; flex: 1;">
+        <div class="bento-card white" style="justify-content: space-between;">
+          <div>
+            <span class="chip soft-green" style="margin-bottom:8px;">INTA Corrientes · Lic. Natalia Retamozo</span>
+            <h3>Explicabilidad y Calibración</h3>
+            <p>Los informes técnicos actuales están dispersos y los agrónomos rechazan modelos de <strong>«caja negra»</strong>. Exige variables estáticas (suelo) + dinámicas (clima) y contemplar nubosidad local.</p>
+          </div>
+          <div style="font-size:12.5px; font-weight:700; color:var(--green-dark); margin-top:10px;">&rarr; RF: Semáforo + Auditoría JSON (XAI)</div>
+        </div>
+
+        <div class="bento-card white" style="justify-content: space-between;">
+          <div>
+            <span class="chip soft-green" style="margin-bottom:8px;">Polo IT Chaco · Matías Obregón (Servisoft)</span>
+            <h3>Adopción y Trazabilidad</h3>
+            <p>Fuerte barrera cultural/generacional en el NEA: la herramienta debe mostrar valor inmediato con mínima carga manual y respaldar certificaciones ambientales de exportación.</p>
+          </div>
+          <div style="font-size:12.5px; font-weight:700; color:var(--green-dark); margin-top:10px;">&rarr; RNF: UX de baja fricción y Responsive</div>
+        </div>
+
+        <div class="bento-card mint" style="justify-content: space-between;">
+          <div>
+            <span class="chip" style="margin-bottom:8px;">Mentorías AgTech · Macedo, Cruz, Menezes</span>
+            <h3>Privacidad y Human-in-the-loop</h3>
+            <p>El polígono del lote es información sensible del productor. Control estricto de falsos positivos, diferenciación por cultivo y cuantificación del ahorro de insumos.</p>
+          </div>
+          <div style="font-size:12.5px; font-weight:700; color:var(--green-deep); margin-top:10px;">&rarr; RNF: Aislamiento por usuario en BD</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         SLIDE 5: CAP. 3 — HERRAMIENTAS, STACK Y PIPELINE ETL
+         ===================================================== -->
+    <section class="slide" data-speaker="Giovanni Oscar Piazza" data-time="1:15 (Acum: 4:45)" data-notes="Explicar el porqué técnico de cada bloque, no solo nombrarlos: 1) GCP + GEE hacen el filtrado de nubes y la reducción zonal en la nube para no bajar GeoTIFFs de gigabytes; INTA entra en vivo por WMS OGC. 2) Google Colab entrena con Pandas/Scikit-learn. 3) Django/GeoDjango + PostGIS armonizan a SRID 4326 y calculan metros en EPSG:3857 con carga idempotente. 4) Docker + Dev Containers resuelven GDAL entre Windows/Linux, y trabajamos con Spec-Driven Development en docs/ coordinando Antigravity y Claude Code.">
+      <div>
+        <div class="slide-top">
+          <span class="slide-chapter">Capítulo 3 · Herramientas, Lenguajes y Pipeline ETL</span>
+          <span class="slide-brand-mini"><img src="../../iagrocorr_project/static/images/iagrocorr_logo_n.png" alt="" onerror="this.style.display='none'"/>IAgroCorr</span>
+        </div>
+        <h2 class="slide-title">Arquitectura, Stack y Pipeline ETL</h2>
+        <p class="slide-subtitle">Procesamiento híbrido Cloud/Local con reducción zonal en servidor y contenedores reproducibles</p>
+      </div>
+
+      <!-- Flujo horizontal de 4 bloques arquitectónicos -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; flex: 1; margin-top: 6px;">
+        <div class="bento-card mint" style="justify-content: space-between; padding: 20px;">
+          <div>
+            <div style="font-size:12px; font-weight:800; color:var(--green-deep); text-transform:uppercase; margin-bottom:6px;">1. Extract &amp; Cloud GIS</div>
+            <h3 style="font-size:19px;">GCP + Earth Engine &amp; OGC</h3>
+            <p style="margin-top:6px;"><strong>Google Cloud Project</strong> + API <strong>GEE</strong> filtran nubes y reducen píxeles <em>Sentinel-2</em> por polígono en la nube (JSON liviano, sin bajar GeoTIFFs). Cartografía <strong>IDECorr/IDERA</strong> y <strong>WMS INTA</strong> en vivo.</p>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;">
+            <span class="chip">GEE API</span>
+            <span class="chip">GCP IAM</span>
+            <span class="chip">WMS INTA</span>
+          </div>
+        </div>
+
+        <div class="bento-card white" style="justify-content: space-between; padding: 20px;">
+          <div>
+            <div style="font-size:12px; font-weight:800; color:var(--green-dark); text-transform:uppercase; margin-bottom:6px;">2. Transform &amp; DW</div>
+            <h3 style="font-size:19px;">GeoDjango + PostGIS 3.4</h3>
+            <p style="margin-top:6px;"><strong>Python 3.12/3.13</strong> y <strong>Django 6</strong> con <code>GDAL/GEOS</code>. Armoniza geometrías en <strong>SRID 4326</strong>, proyecta a <strong>EPSG:3857</strong> para distancias/áreas exactas y carga de forma idempotente en <strong>PostgreSQL 16</strong>.</p>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;">
+            <span class="chip">GeoDjango</span>
+            <span class="chip">PostGIS GiST</span>
+            <span class="chip">GDAL 3.13</span>
+          </div>
+        </div>
+
+        <div class="bento-card white" style="justify-content: space-between; padding: 20px;">
+          <div>
+            <div style="font-size:12px; font-weight:800; color:var(--green-dark); text-transform:uppercase; margin-bottom:6px;">3. Laboratorio GeoIA</div>
+            <h3 style="font-size:19px;">Google Colab + Scikit-learn</h3>
+            <p style="margin-top:6px;">Exploración EDA, escalado y entrenamiento CRISP-DM en notebooks de <strong>Google Colab</strong> con <code>Pandas</code> y <code>Scikit-learn</code>, exportando modelos serializados livianos (<code>.joblib</code>) al backend.</p>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;">
+            <span class="chip">Google Colab</span>
+            <span class="chip">Scikit-learn</span>
+            <span class="chip">Pandas</span>
+          </div>
+        </div>
+
+        <div class="bento-card" style="justify-content: space-between; padding: 20px;">
+          <div>
+            <div style="font-size:12px; font-weight:800; color:var(--text-main); text-transform:uppercase; margin-bottom:6px;">4. Frontend &amp; DevOps</div>
+            <h3 style="font-size:19px;">Leaflet, Docker e IA Agéntica</h3>
+            <p style="margin-top:6px;">Visor <strong>Leaflet + Geoman</strong> y Bootstrap 5 (Claro/Oscuro). Entorno unificado en <strong>Docker + VS Code Dev Containers</strong>, proxy <strong>Cloudflare</strong>, Jira/Zotero y desarrollo guiado por specs con <strong>Antigravity</strong> y <strong>Claude Code</strong>.</p>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;">
+            <span class="chip">Docker</span>
+            <span class="chip">Leaflet</span>
+            <span class="chip">Antigravity · Claude Code</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zócalo resumen de trazabilidad ETL -->
+      <div style="margin-top: 16px; background: var(--surface-white); border-radius: 16px; padding: 11px 20px; border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; font-size: 13.5px;">
+        <span><strong>Trazabilidad en Data Warehouse:</strong> Separación de <code>fecha_captura</code> vs. <code>fecha_procesamiento</code> + restricción única <code>(lote, fecha_captura)</code> sin duplicados.</span>
+        <span class="chip green">Esquema DW 100% Operativo</span>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         SLIDE 6: CAP. 2 Y 3 — MODELOS GEOIA Y VALIDACIÓN
+         ===================================================== -->
+    <section class="slide" data-speaker="Julio César Pintos" data-time="1:00 (Acum: 5:45)" data-notes="Explicar por qué entrenamos modelos propios en Google Colab en vez de bajar cajas negras genéricas: Corrientes tiene régimen subtropical único y escasez de etiquetas de plagas lote a lote. Combinamos: 1) Sistema Experto Espacial determinístico (ya activo) para leyes ambientales/SENASA. 2) Isolation Forest con partición temporal (sin data leakage), validado contra la gran sequía de Corrientes 2022-2023. 3) K-Means + similitud vectorial validado con Silhouette Score y Köppen-Geiger.">
+      <div>
+        <div class="slide-top">
+          <span class="slide-chapter">Capítulos 2 y 3 · Modelado GeoIA y Estrategia de Validación</span>
+          <span class="slide-brand-mini"><img src="../../iagrocorr_project/static/images/iagrocorr_logo_n.png" alt="" onerror="this.style.display='none'"/>IAgroCorr</span>
+        </div>
+        <h2 class="slide-title">Arquitectura Híbrida de IA</h2>
+        <p class="slide-subtitle">Modelos propios calibrados en Google Colab para el contexto subtropical correntino (IA Explicable)</p>
+      </div>
+
+      <div class="cards-row cols-3" style="margin-top: 24px;">
+        <article class="num-card mint">
+          <div class="num-badge">01</div>
+          <div>
+            <span class="chip green" style="margin-bottom:10px;">Activo en Producción</span>
+            <h3>Sistema Experto Espacial</h3>
+            <p>Inferencia determinística en PostGIS (<code>rules_engine.py</code>) que cruza buffers de <strong>Esteros del Iberá</strong> (1000m), ríos (200–500m), ejidos urbanos y <strong>bandas SENASA (Ia–IV)</strong>.</p>
+          </div>
+          <div style="margin-top:12px; font-size:13px; font-weight:700; color:var(--green-deep);">
+            Validación: 100% explicable · 0% falsos positivos normativos
+          </div>
+        </article>
+
+        <article class="num-card">
+          <div class="num-badge">02</div>
+          <div>
+            <span class="chip amber" style="margin-bottom:10px;">ML No Supervisado · Colab</span>
+            <h3>Isolation Forest (Anomalías)</h3>
+            <p>Detecta caídas atípicas de vigor (<code>NDVI</code>, <code>NDWI</code>, <code>&Delta;NDVI</code>, humedad) sin requerir miles de lotes etiquetados con plagas en Corrientes.</p>
+          </div>
+          <div style="margin-top:12px; font-size:12.8px; font-weight:700; color:var(--text-main); background:var(--surface-soft); padding:8px 10px; border-radius:12px;">
+            <strong>Split Temporal (2019–2025):</strong> Calibración sobre la sequía histórica 2022–2023 documentada por INTA.
+          </div>
+        </article>
+
+        <article class="num-card">
+          <div class="num-badge">03</div>
+          <div>
+            <span class="chip amber" style="margin-bottom:10px;">ML No Supervisado + Regresión</span>
+            <h3>Clustering Gemelos Climáticos</h3>
+            <p><code>StandardScaler</code> + <strong>K-Means / Vecinos Cercanos</strong> integrando variables edáficas fijas y climáticas dinámicas para rankear similitud por lote.</p>
+          </div>
+          <div style="margin-top:12px; font-size:12.8px; font-weight:700; color:var(--text-main); background:var(--surface-soft); padding:8px 10px; border-radius:12px;">
+            <strong>Métricas:</strong> <em>Silhouette Score</em>, Método del Codo y coherencia Köppen (+ ensayo <em>Random Forest</em> de rinde).
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         SLIDE 7: CAP. 4 — RESULTADOS OPERATIVOS (BETA ABIERTA)
+         ===================================================== -->
+    <section class="slide" data-speaker="Giovanni Oscar Piazza" data-time="1:30 (Acum: 7:15)" data-notes="Mostrar los 3 bloques funcionales que YA están corriendo hoy en la rama main sobre Docker y PostGIS: 1) Delimitación interactiva de lotes con bloqueo automático anti-ejidos urbanos y cálculo de hectáreas. 2) Semáforo ambiental que cruza distancias topológicas reales a Iberá y ríos con agroquímicos SENASA. 3) Capas WMS en vivo del GeoServer INTA, Gemelos Globales, diseño responsive y modo oscuro sin parpadeo. (Si hay buena conexión pueden abrir https://iagrocorr.com.ar/ durante 30–40 segundos).">
+      <div>
+        <div class="slide-top">
+          <span class="slide-chapter">Capítulo 4 · Resultados Alcanzados (Prototipo Funcional en Beta)</span>
+          <a href="https://iagrocorr.com.ar/" target="_blank" rel="noopener" style="text-decoration:none;">
+            <span class="chip green" style="cursor:pointer;">&#9654; Ver en Vivo · iagrocorr.com.ar</span>
+          </a>
+        </div>
+        <h2 class="slide-title">Resultados Operativos Hoy</h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 18px; flex: 1; margin-top: 8px;">
+        <!-- Panel 1: Representación limpia del Visor Espacial PostGIS -->
+        <div class="bento-card white" style="padding: 20px; justify-content: space-between;">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span class="chip soft-green">GeoDjango + Leaflet-Geoman</span>
+              <span style="font-size:12px; font-weight:700; color:var(--text-soft);">SRID 4326 / 3857</span>
+            </div>
+            <h3 style="font-size:19px;">1. Ordenamiento y ABM de Lotes</h3>
+            <p style="font-size:13.5px; margin-bottom:12px;">Dibujo vectorial en mapa híbrido, cálculo instantáneo de hectáreas, borrado en cascada y <strong>bloqueo topológico anti-urbano</strong> (<code>ST_Intersects</code>).</p>
+
+            <!-- Mini visor esquemático limpio en SVG -->
+            <svg viewBox="0 0 340 155" style="width:100%; border-radius:14px; background:#DCEFE2; border:1px solid #BBDAC5;">
+              <!-- Curso hídrico -->
+              <path d="M 0 125 Q 95 95, 185 118 T 340 85" fill="none" stroke="#1D6FE8" stroke-width="7" opacity="0.75"/>
+              <!-- Reserva Iberá -->
+              <polygon points="225,12 328,18 332,72 242,66" fill="#0DCAF0" fill-opacity="0.28" stroke="#06697E" stroke-width="2" stroke-dasharray="5,4"/>
+              <text x="242" y="44" font-size="10.5" font-weight="700" fill="#054C5C">Buffer Iberá (1km)</text>
+              <!-- Zona urbana bloqueada -->
+              <polygon points="18,18 106,18 106,72 18,72" fill="#DC3545" fill-opacity="0.22" stroke="#DC3545" stroke-width="2" stroke-dasharray="4,4"/>
+              <text x="27" y="43" font-size="10" font-weight="800" fill="#9E1C28">Ejido Urbano</text>
+              <text x="27" y="56" font-size="9" font-weight="700" fill="#9E1C28">(Exclusión activa)</text>
+              <!-- Lote válido -->
+              <polygon points="128,36 206,42 198,96 122,90" fill="#0DB14B" fill-opacity="0.45" stroke="#087F35" stroke-width="2.5"/>
+              <text x="135" y="66" font-size="10.5" font-weight="800" fill="#063F1B">Lote Arroz</text>
+              <text x="135" y="79" font-size="9.5" font-weight="700" fill="#063F1B">480.5 Ha · VERDE</text>
+            </svg>
+          </div>
+          <div style="font-size:12.5px; color:var(--text-muted); font-weight:600; margin-top:8px;">
+            + Capas en vivo <strong>WMS GeoServer INTA</strong> (Suelos y COS)
+          </div>
+        </div>
+
+        <!-- Panel 2: Diagnóstico Semáforo y SENASA -->
+        <div class="bento-card white" style="padding: 20px; justify-content: space-between;">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span class="chip soft-green">Motor Topológico + SENASA</span>
+            </div>
+            <h3 style="font-size:19px;">2. Semáforo Auditable en DW</h3>
+            <p style="font-size:13.5px; margin-bottom:12px;">Evalúa en milisegundos distancias a áreas protegidas y ríos junto a insumos aplicados (Clases Ia a IV), guardando evidencia en <code>HechoMedicionAmbiental</code>.</p>
+
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="background:#E9FAEE; border-left:4px solid #0DB14B; padding:9px 12px; border-radius:10px;">
+                <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:800; color:#086D2E;">
+                  <span>Mercedes · Arroz</span><span>VERDE (10/100)</span>
+                </div>
+                <div style="font-size:12px; color:var(--text-muted);">Clase IV · NDVI 0.78 · Margen seguro</div>
+              </div>
+
+              <div style="background:#FFF8E6; border-left:4px solid #E59400; padding:9px 12px; border-radius:10px;">
+                <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:800; color:#945E00;">
+                  <span>Zona Amortiguamiento</span><span>AMARILLO (60/100)</span>
+                </div>
+                <div style="font-size:12px; color:var(--text-muted);">Proximidad hídrica &lt; 500m · Vigilar deriva</div>
+              </div>
+
+              <div style="background:#FFECEC; border-left:4px solid #D9383A; padding:9px 12px; border-radius:10px;">
+                <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:800; color:#A61E22;">
+                  <span>Goya / Virasoro</span><span>ROJO (90/100)</span>
+                </div>
+                <div style="font-size:12px; color:var(--text-muted);">Alerta Banda Roja IA o Estrés NDVI &lt; 0.40</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:12.5px; color:var(--text-muted); font-weight:600; margin-top:8px;">
+            Diagnóstico JSON explicable (sin caja negra)
+          </div>
+        </div>
+
+        <!-- Panel 3: Gemelos Globales + UX/DevOps -->
+        <div class="bento-card mint" style="padding: 20px; justify-content: space-between;">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span class="chip">Gemelos Globales &amp; UX</span>
+            </div>
+            <h3 style="font-size:19px;">3. Matriz Global y Portabilidad</h3>
+            <p style="font-size:13.5px; margin-bottom:12px;">Vista comparativa georreferenciada en PostGIS, interfaz <em>responsive</em> con <strong>Modo Oscuro</strong> sin parpadeo y despliegue completo con un comando Docker.</p>
+
+            <div style="background:#FFFFFF; border-radius:14px; padding:12px 14px; display:flex; flex-direction:column; gap:9px; border:1px solid var(--surface-mint-border);">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700;"><span>Uruguaiana / Itaqui (Brasil)</span><span style="color:var(--green-dark);">95%</span></div>
+                <div class="prog-track" style="height:7px;"><div class="prog-fill" style="width:95%;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700;"><span>Cuenca Laguna Merín (Uruguay)</span><span style="color:var(--green-dark);">88%</span></div>
+                <div class="prog-track" style="height:7px;"><div class="prog-fill" style="width:88%;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700;"><span>Delta del Mississippi (EE.UU.)</span><span style="color:var(--green-dark);">85%</span></div>
+                <div class="prog-track" style="height:7px;"><div class="prog-fill" style="width:85%;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700;"><span>Provincia de Hunan (China)</span><span style="color:var(--green-dark);">82%</span></div>
+                <div class="prog-track" style="height:7px;"><div class="prog-fill" style="width:82%;"></div></div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:12.5px; color:var(--green-deep); font-weight:700; margin-top:8px;">
+            16 Pull Requests integrados · Landing + Panel Beta
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         SLIDE 8: CAP. 4.4 — PROPIEDAD INTELECTUAL E INDUSTRIAL
+         ===================================================== -->
+    <section class="slide" data-speaker="Julio César Pintos" data-time="0:45 (Acum: 8:00)" data-notes="Exponer con precisión el apartado 4.4 exigido por la cátedra bajo la Resolución 641/98 C.S. de la UNNE (actualizada en 2024): A) Titularidad de derechos de autor del software y arquitectura para los alumnos desarrolladores (Art. 7) reconociendo la dirección del Prof. Mettini. B) Propiedad industrial y eventual marca/modelo de utilidad vía Secretaría General de Relaciones Interinstitucionales (Art. 11). C) Sin NDAs externos y solicitud de reserva de publicación por 1 año en el repositorio institucional (Art. 15).">
+      <div>
+        <div class="slide-top">
+          <span class="slide-chapter">Capítulo 4 · Apartado 4.4 Marco Legal y Transferencia</span>
+          <span class="slide-brand-mini"><img src="../../iagrocorr_project/static/images/iagrocorr_logo_n.png" alt="" onerror="this.style.display='none'"/>IAgroCorr</span>
+        </div>
+        <h2 class="slide-title">Propiedad Intelectual y Confidencialidad</h2>
+        <p class="slide-subtitle">Encuadre bajo Res. N° 641/98 C.S. UNNE (actualizada en 2024), Ley 11.723 y Declaración Ética RES 0182/18</p>
+      </div>
+
+      <div class="cards-row cols-3" style="margin-top: 26px;">
+        <article class="num-card mint">
+          <div class="num-badge">A</div>
+          <div>
+            <h3>Derechos de Autor</h3>
+            <p>El código fuente (Python/Django, HTML/CSS/JS y consultas PostGIS) y la arquitectura documentada están protegidos por la <strong>Ley 11.723</strong>. Según el <strong>Art. 7 (UNNE)</strong>, la titularidad corresponde a los <strong>estudiantes autores</strong>, reconociendo la dirección técnica del Profesor Orientador.</p>
+          </div>
+          <span class="cite-tag" style="background:#FFFFFF;">Artículos 2, 4 y 7 · Regl. UNNE</span>
+        </article>
+
+        <article class="num-card mint">
+          <div class="num-badge">B</div>
+          <div>
+            <h3>Propiedad Industrial</h3>
+            <p>Si los motores de Machine Learning (anomalías o gemelos climáticos) o el modelo tecnológico derivan en un producto comercializable, marca o modelo de utilidad, su protección se tramitará mediante el <strong>Área de Propiedad Intelectual (SGRI - UNNE)</strong>.</p>
+          </div>
+          <span class="cite-tag" style="background:#FFFFFF;">Capítulo IV · Artículo 11 UNNE</span>
+        </article>
+
+        <article class="num-card mint">
+          <div class="num-badge">C</div>
+          <div>
+            <h3>Confidencialidad y Reserva</h3>
+            <p>Desarrollo académico independiente sin NDAs con terceros (Art. 12). Los autores se acogen al <strong>Art. 15</strong> solicitando <strong>reserva de no divulgación por 1 (un) año</strong> en el repositorio institucional para resguardar la novedad tecnológica previo a transferencia comercial.</p>
+          </div>
+          <span class="cite-tag" style="background:#FFFFFF;">Artículos 12 y 15 · RES 0182/18</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         SLIDE 9: CAP. 4 — GRADO DE AVANCE Y RUTA A DICIEMBRE
+         ===================================================== -->
+    <section class="slide" data-speaker="Giovanni Oscar Piazza" data-time="0:45 (Acum: 8:45)" data-notes="Mostrar con total objetividad dónde estamos parados a fines de octubre (~75% global, con todo el cimiento arquitectónico, espacial y visual resuelto) y cómo se organizan los últimos 3 Sprints quincenales de noviembre y primera quincena de diciembre para entregar el Informe Final (Anexo III) antes de la evaluación del tribunal.">
+      <div>
+        <div class="slide-top">
+          <span class="slide-chapter">Capítulo 4 · Estado Preliminar y Planificación de Cierre</span>
+          <span class="slide-brand-mini"><img src="../../iagrocorr_project/static/images/iagrocorr_logo_n.png" alt="" onerror="this.style.display='none'"/>IAgroCorr</span>
+        </div>
+        <h2 class="slide-title">Estado Actual y Pasos a Diciembre</h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; flex: 1; margin-top: 10px;">
+        <!-- Barras objetivas de avance hoy -->
+        <div class="bento-card white" style="justify-content: space-between; padding: 24px 26px;">
+          <div>
+            <span class="chip green" style="margin-bottom:10px;">Corte Octubre 2026 · ~75% Global</span>
+            <h3 style="font-size:22px; margin-bottom:14px;">Grado de Avance por Componente</h3>
+
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:13.5px; font-weight:700;">
+                  <span>Educción, Requerimientos y Diseño DW</span><span style="color:var(--green-dark);">100%</span>
+                </div>
+                <div class="prog-track"><div class="prog-fill" style="width:100%;"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:13.5px; font-weight:700;">
+                  <span>Infraestructura Docker, PostGIS y UX/UI</span><span style="color:var(--green-dark);">92%</span>
+                </div>
+                <div class="prog-track"><div class="prog-fill" style="width:92%;"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:13.5px; font-weight:700;">
+                  <span>Motor Topológico Iberá / Ríos / SENASA + WMS</span><span style="color:var(--green-dark);">85%</span>
+                </div>
+                <div class="prog-track"><div class="prog-fill" style="width:85%;"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:13.5px; font-weight:700;">
+                  <span>ETL Automático GEE/IDECorr y Modelos Colab</span><span style="color:var(--amber);">45%</span>
+                </div>
+                <div class="prog-track"><div class="prog-fill amber" style="width:45%;"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:var(--surface-soft); padding:11px 14px; border-radius:14px; font-size:12.8px; color:var(--text-main); font-weight:600;">
+            <strong>Meta institucional:</strong> Presentación del Informe Final en <strong>Diciembre 2026</strong> &rarr; Defensa oral estimada en <strong>Marzo / Abril</strong>.
+          </div>
+        </div>
+
+        <!-- 3 Sprints de cierre (Estilo Slide 15 Pasos a Seguir) -->
+        <div style="display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
+          <div class="step-item">
+            <div class="step-badge">01</div>
+            <div>
+              <h4>Sprint 1 (1 – 15 Nov) · Conectores ETL Reales</h4>
+              <p>Automatizar comando <code>sincronizar_gee</code> (vía Google Cloud Project con filtro de nubes sobre Sentinel-2) e importar capas vectoriales oficiales completas de <strong>IDECorr / IDERA</strong>.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">02</div>
+            <div>
+              <h4>Sprint 2 (16 – 30 Nov) · Entrenamiento e Integración IA</h4>
+              <p>Entrenar y validar en <strong>Google Colab</strong> los modelos <code>Isolation Forest</code> y <code>K-Means</code>; exportar artefactos <code>.joblib</code> y vincular sus predicciones dinámicas al Dashboard.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">03</div>
+            <div>
+              <h4>Sprint 3 (1 – 15 Dic) · QA Integral y Anexo III</h4>
+              <p>Ejecutar suite de pruebas automatizadas en GeoDjango, consolidar métricas de rendimiento/validación CRISP-DM y entregar el <strong>Informe Final</strong> a la cátedra.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         SLIDE 10: CAP. 5 — CONCLUSIONES Y TRABAJOS FUTUROS
+         ===================================================== -->
+    <section class="slide" data-speaker="Julio y Giovanni (Cierre)" data-time="0:45 (Total: 9:30 / 10:00)" data-notes="Cerrar con contundencia dentro de los 9m 30s: resumir que IAgroCorr demuestra cómo estándares abiertos + GeoIA explicable transforman datos públicos dispersos en decisiones sustentables para Corrientes, y dejar planteadas las 3 líneas de trabajo futuro (PWA offline/WhatsApp, Radar SAR Sentinel-1 y piloto de campo de 60 días). Agradecer y quedar a disposición del tribunal.">
+      <div>
+        <div class="slide-top">
+          <span class="slide-chapter">Capítulo 5 · Conclusiones Preliminares y Líneas Futuras</span>
+          <span class="slide-brand-mini"><img src="../../iagrocorr_project/static/images/iagrocorr_logo_n.png" alt="" onerror="this.style.display='none'"/>IAgroCorr</span>
+        </div>
+        <h2 class="slide-title">Conclusiones y Futuros Trabajos</h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 22px; flex: 1; margin-top: 10px;">
+        <!-- Conclusiones -->
+        <div class="bento-hero" style="justify-content: space-between;">
+          <div>
+            <span style="font-size:12px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; opacity:0.9;">Conclusiones Alcanzadas</span>
+            <h2 style="font-size:32px; margin-top:6px;">De Datos Dispersos a Decisiones Explicables</h2>
+            <ul style="margin-top:14px; padding-left:18px; display:flex; flex-direction:column; gap:11px; font-size:14.5px; line-height:1.45;">
+              <li>La integración de <strong>PostGIS + WMS OGC + Semáforos auditables</strong> resuelve la problemática relevada con el INTA sin caer en modelos opacos de «caja negra».</li>
+              <li>Incorporar buffers legales de los <strong>Esteros del Iberá, cursos hídricos y bandas SENASA</strong> en la base espacial armoniza productividad y preservación ambiental.</li>
+              <li>La validación temprana con referentes regionales orientó el diseño hacia <strong>privacidad estricta por productor</strong>, contenedores portables y baja fricción visual.</li>
+            </ul>
+          </div>
+          <div style="font-size:12.5px; opacity:0.9; font-weight:700; margin-top:10px;">
+            Referencias troncales: Gao, Hu &amp; Li (2023) · Karmaoui et al. (2023) · Banco Mundial (2024)
+          </div>
+        </div>
+
+        <!-- Trabajos Futuros -->
+        <div style="display:flex; flex-direction:column; justify-content:space-between; gap:13px;">
+          <div class="bento-card white" style="padding:17px 20px;">
+            <h3 style="font-size:17.5px;"><span style="color:var(--green-brand);">01 ·</span> Operación Rural Offline (PWA) y Canal WhatsApp</h3>
+            <p style="font-size:13.5px;">Sincronización diferida ante baja conectividad rural en campo y envío automático de alertas tempranas al teléfono del productor.</p>
+          </div>
+
+          <div class="bento-card white" style="padding:17px 20px;">
+            <h3 style="font-size:17.5px;"><span style="color:var(--green-brand);">02 ·</span> Fusión Óptico-Radar (Sentinel-1 SAR + Sentinel-2)</h3>
+            <p style="font-size:13.5px;">Incorporar aperturas sintéticas de radar para garantizar continuidad de monitoreo en semanas de nubosidad persistente en el NEA.</p>
+          </div>
+
+          <div class="bento-card white" style="padding:17px 20px;">
+            <h3 style="font-size:17.5px;"><span style="color:var(--green-brand);">03 ·</span> Piloto a Campo (Shadow Testing de 60 días)</h3>
+            <p style="font-size:13.5px;">Validación en terreno junto a productores e investigadores de FCA-UNNE e INTA para ajuste fino de umbrales por cadena productiva.</p>
+          </div>
+
+          <div style="background:var(--surface-mint); border:1px solid var(--surface-mint-border); border-radius:18px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between;">
+            <div>
+              <div style="font-weight:800; font-size:17px; color:var(--text-main);">¡Muchas gracias por su atención!</div>
+              <div style="font-size:13px; color:var(--green-deep); font-weight:600;">Quedamos a disposición del Tribunal para consultas · iagrocorr.com.ar</div>
+            </div>
+            <span class="chip green">PFC 2026</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Cajón de Notas de Orador -->
+<aside id="notesDrawer" aria-live="polite">
+  <div id="notesHeader">
+    <span id="notesSpeaker">Orador</span>
+    <span id="notesTargetTime">Meta de tiempo</span>
+  </div>
+  <div id="notesBody"></div>
+</aside>
+
+<!-- Barra flotante de navegación y cronómetro de 10 minutos -->
+<nav id="hud" aria-label="Controles de presentación">
+  <button class="hud-btn" id="btnPrev" title="Anterior (Flecha Izquierda)">&#8592;</button>
+  <span id="slideCounter" style="font-weight:800; min-width:52px; text-align:center;">01 / 10</span>
+  <button class="hud-btn" id="btnNext" title="Siguiente (Flecha Derecha / Espacio)">&#8594;</button>
+
+  <div class="hud-sep"></div>
+
+  <span id="timerDisplay" title="Cronómetro sobre límite de 10:00 min">00:00 / 10:00</span>
+  <button class="hud-btn" id="btnTimer" title="Iniciar / Pausar cronómetro (Tecla T)">Iniciar</button>
+  <button class="hud-btn" id="btnReset" title="Reiniciar cronómetro (Tecla R)">&#8634;</button>
+
+  <div class="hud-sep"></div>
+
+  <span id="speakerBadge">Julio</span>
+  <button class="hud-btn" id="btnPresenter" title="Abrir ventana privada de Orador para doble pantalla (Tecla S)">Modo Orador (S)</button>
+  <button class="hud-btn" id="btnNotes" title="Mostrar / Ocultar guion en esta pantalla (Tecla N)">Guion (N)</button>
+  <button class="hud-btn" id="btnPrint" title="Exportar a PDF 16:9 (Ctrl+P)">PDF</button>
+  <button class="hud-btn" id="btnFs" title="Pantalla completa (Tecla F)">&#x26F6;</button>
+</nav>
+
+<script>
+  (function () {
+    const deck = document.getElementById('deck');
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const counter = document.getElementById('slideCounter');
+    const speakerBadge = document.getElementById('speakerBadge');
+    const notesDrawer = document.getElementById('notesDrawer');
+    const notesSpeaker = document.getElementById('notesSpeaker');
+    const notesTargetTime = document.getElementById('notesTargetTime');
+    const notesBody = document.getElementById('notesBody');
+    const hud = document.getElementById('hud');
+
+    let idx = 0;
+    let presenterWin = null;
+
+    function getSlideTitle(slideEl, i) {
+      if (i === 0) return 'Carátula Oficial — IAgroCorr';
+      const h2 = slideEl.querySelector('.slide-title, .bento-hero h2');
+      return h2 ? h2.textContent.trim() : ('Diapositiva ' + (i + 1));
+    }
+
+    // Escalado proporcional exacto 1280x720 a cualquier proyector o pantalla
+    function fitStage() {
+      const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+      deck.style.transform = 'scale(' + scale.toFixed(4) + ')';
+    }
+    window.addEventListener('resize', fitStage);
+    fitStage();
+
+    function syncPresenterWindow() {
+      if (!presenterWin || presenterWin.closed) return;
+      const doc = presenterWin.document;
+      const active = slides[idx];
+      const next = slides[idx + 1] || null;
+      const pCount = doc.getElementById('pCount');
+      if (!pCount) return;
+
+      pCount.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+      doc.getElementById('pCurrentTitle').textContent = getSlideTitle(active, idx);
+      doc.getElementById('pNextTitle').textContent = next
+        ? ('Sigue (' + String(idx + 2).padStart(2, '0') + '): ' + getSlideTitle(next, idx + 1) + ' — ' + (next.getAttribute('data-speaker') || '').split(' ')[0])
+        : 'Última diapositiva — Cierre y Preguntas del Tribunal';
+      doc.getElementById('pSpeaker').textContent = active.getAttribute('data-speaker') || '';
+      doc.getElementById('pMetaTime').textContent = 'Meta: ' + (active.getAttribute('data-time') || '');
+      doc.getElementById('pNotes').textContent = active.getAttribute('data-notes') || '';
+    }
+
+    function syncPresenterTimer() {
+      if (!presenterWin || presenterWin.closed) return;
+      const doc = presenterWin.document;
+      const pTimer = doc.getElementById('pTimer');
+      const pBtnTimer = doc.getElementById('pBtnTimer');
+      if (!pTimer || !pBtnTimer) return;
+
+      const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const s = String(elapsed % 60).padStart(2, '0');
+      pTimer.textContent = m + ':' + s + ' / 10:00';
+      pTimer.className = elapsed >= 555 ? 'danger' : (elapsed >= 480 ? 'warn' : 'ok');
+      pBtnTimer.textContent = timerId ? 'Pausar (T)' : (elapsed > 0 ? 'Reanudar (T)' : 'Iniciar (T)');
+    }
+
+    function openPresenterMode() {
+      if (presenterWin && !presenterWin.closed) {
+        presenterWin.focus();
+        return;
+      }
+      presenterWin = window.open('', 'IAgroCorrPresenter', 'width=960,height=640');
+      if (!presenterWin) return;
+
+      presenterWin.document.open();
+      presenterWin.document.write(`<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>Consola Privada de Orador — IAgroCorr</title>
+<style>
+  body { margin:0; padding:28px 34px; background:#121614; color:#F2F6F3; font-family:'Segoe UI',system-ui,sans-serif; display:flex; flex-direction:column; height:100vh; box-sizing:border-box; gap:18px; }
+  .top { display:flex; justify-content:space-between; align-items:center; background:#1C221F; padding:18px 24px; border-radius:18px; border:1px solid rgba(255,255,255,0.1); }
+  #pTimer { font-size:44px; font-weight:800; font-variant-numeric:tabular-nums; }
+  #pTimer.ok { color:#4CE887; } #pTimer.warn { color:#FFD166; } #pTimer.danger { color:#FF6B6E; }
+  .btns { display:flex; gap:10px; flex-wrap:wrap; }
+  button { background:#2A332E; color:#FFF; border:1px solid rgba(255,255,255,0.14); padding:10px 18px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; }
+  button.primary { background:#0DB14B; border-color:#0DB14B; }
+  button:hover { filter:brightness(1.12); }
+  .meta-row { display:flex; justify-content:space-between; align-items:center; gap:16px; background:#1A241E; border:1px solid rgba(13,177,75,0.35); padding:14px 22px; border-radius:16px; }
+  .spk { font-size:22px; font-weight:800; color:#63F59A; }
+  .target { font-size:16px; font-weight:700; color:#D5E3D9; background:rgba(255,255,255,0.08); padding:6px 14px; border-radius:999px; }
+  .notes-box { flex:1; background:#1C221F; border-radius:18px; padding:24px 28px; border:1px solid rgba(255,255,255,0.09); overflow-y:auto; }
+  .cur-title { font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:#8FA395; margin-bottom:10px; }
+  #pNotes { font-size:21px; line-height:1.55; color:#F5FAF6; font-weight:500; }
+  .foot { display:flex; justify-content:space-between; align-items:center; font-size:14px; color:#9FB0A4; background:#181D1A; padding:12px 20px; border-radius:14px; }
+</style></head><body>
+  <div class="top">
+    <div>
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#8FA395;font-weight:700;">Cronómetro Defensa (Máx. 10:00)</div>
+      <div id="pTimer" class="ok">00:00 / 10:00</div>
+    </div>
+    <div class="btns">
+      <button id="pPrev">&larr; Anterior</button>
+      <span id="pCount" style="font-size:20px;font-weight:800;align-self:center;padding:0 10px;">01 / 10</span>
+      <button id="pNext" class="primary">Siguiente &rarr;</button>
+      <button id="pBtnTimer">Iniciar (T)</button>
+      <button id="pBtnReset">Reiniciar</button>
+    </div>
+  </div>
+  <div class="meta-row">
+    <div><span style="font-size:13px;color:#9FB0A4;text-transform:uppercase;font-weight:700;">Habla ahora: </span><span class="spk" id="pSpeaker"></span></div>
+    <span class="target" id="pMetaTime"></span>
+  </div>
+  <div class="notes-box">
+    <div class="cur-title">Lámina en Proyector: <span id="pCurrentTitle" style="color:#FFF;"></span></div>
+    <div id="pNotes"></div>
+  </div>
+  <div class="foot">
+    <span id="pNextTitle" style="font-weight:700;color:#CFE6D6;"></span>
+    <span>Proyector limpio activado (sin reloj ni guion en público)</span>
+  </div>
+</body></html>`);
+      presenterWin.document.close();
+
+      // Ocultar automáticamente controles y guion en la pantalla del proyector
+      notesDrawer.classList.remove('open');
+      btnNotes.classList.remove('active');
+      hud.classList.add('hidden');
+
+      presenterWin.document.getElementById('pPrev').onclick = () => renderSlide(idx - 1);
+      presenterWin.document.getElementById('pNext').onclick = () => renderSlide(idx + 1);
+      presenterWin.document.getElementById('pBtnTimer').onclick = toggleTimer;
+      presenterWin.document.getElementById('pBtnReset').onclick = resetTimer;
+
+      presenterWin.addEventListener('keydown', (ev) => {
+        if (ev.key === 'ArrowRight' || ev.key === 'PageDown' || ev.key === ' ') {
+          ev.preventDefault();
+          renderSlide(idx + 1);
+        } else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') {
+          ev.preventDefault();
+          renderSlide(idx - 1);
+        } else if (ev.key === 't' || ev.key === 'T') {
+          toggleTimer();
+        } else if (ev.key === 'r' || ev.key === 'R') {
+          resetTimer();
+        }
+      });
+
+      presenterWin.addEventListener('beforeunload', () => {
+        hud.classList.remove('hidden');
+      });
+
+      syncPresenterWindow();
+      syncPresenterTimer();
+    }
+
+    function renderSlide(i) {
+      idx = Math.max(0, Math.min(slides.length - 1, i));
+      slides.forEach((s, k) => s.classList.toggle('active', k === idx));
+      counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+
+      const active = slides[idx];
+      const spk = active.getAttribute('data-speaker') || '';
+      const tm = active.getAttribute('data-time') || '';
+      const nt = active.getAttribute('data-notes') || '';
+
+      speakerBadge.textContent = spk.split(' ')[0];
+      notesSpeaker.textContent = 'Orador: ' + spk;
+      notesTargetTime.textContent = 'Tiempo sugerido: ' + tm;
+      notesBody.textContent = nt;
+      syncPresenterWindow();
+    }
+
+    document.getElementById('btnPrev').addEventListener('click', () => renderSlide(idx - 1));
+    document.getElementById('btnNext').addEventListener('click', () => renderSlide(idx + 1));
+    document.getElementById('btnPresenter').addEventListener('click', openPresenterMode);
+
+    // Notas de orador
+    const btnNotes = document.getElementById('btnNotes');
+    function toggleNotes() {
+      notesDrawer.classList.toggle('open');
+      btnNotes.classList.toggle('active', notesDrawer.classList.contains('open'));
+    }
+    btnNotes.addEventListener('click', toggleNotes);
+
+    // Pantalla completa
+    document.getElementById('btnFs').addEventListener('click', toggleFullscreen);
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // Exportar PDF
+    document.getElementById('btnPrint').addEventListener('click', () => window.print());
+
+    // Cronómetro estricto de 10:00 minutos (600s)
+    const timerDisplay = document.getElementById('timerDisplay');
+    const btnTimer = document.getElementById('btnTimer');
+    let elapsed = 0;
+    let timerId = null;
+
+    function updateTimerUI() {
+      const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const s = String(elapsed % 60).padStart(2, '0');
+      timerDisplay.textContent = m + ':' + s + ' / 10:00';
+      timerDisplay.classList.remove('warn', 'danger');
+      if (elapsed >= 555) { // 09:15+
+        timerDisplay.classList.add('danger');
+      } else if (elapsed >= 480) { // 08:00+
+        timerDisplay.classList.add('warn');
+      }
+      syncPresenterTimer();
+    }
+
+    function toggleTimer() {
+      if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+        btnTimer.textContent = 'Reanudar';
+        btnTimer.classList.remove('active');
+      } else {
+        timerId = setInterval(() => {
+          elapsed += 1;
+          updateTimerUI();
+        }, 1000);
+        btnTimer.textContent = 'Pausar';
+        btnTimer.classList.add('active');
+      }
+      syncPresenterTimer();
+    }
+
+    function resetTimer() {
+      if (timerId) clearInterval(timerId);
+      timerId = null;
+      elapsed = 0;
+      btnTimer.textContent = 'Iniciar';
+      btnTimer.classList.remove('active');
+      updateTimerUI();
+    }
+
+    btnTimer.addEventListener('click', toggleTimer);
+    document.getElementById('btnReset').addEventListener('click', resetTimer);
+
+    // Persistir nombres editables de Carátula en localStorage
+    ['editCoord', 'editTribunal'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      try {
+        const saved = localStorage.getItem('iagrocorr_slide_' + id);
+        if (saved) el.textContent = saved;
+        el.addEventListener('input', () => {
+          localStorage.setItem('iagrocorr_slide_' + id, el.textContent.trim());
+        });
+      } catch (e) {}
+    });
+
+    // Atajos de teclado (ignorando cuando se edita texto en Carátula)
+    document.addEventListener('keydown', (e) => {
+      if (e.target && e.target.isContentEditable) return;
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        renderSlide(idx + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        renderSlide(idx - 1);
+      } else if (e.key === 'Home') {
+        renderSlide(0);
+      } else if (e.key === 'End') {
+        renderSlide(slides.length - 1);
+      } else if (e.key === 's' || e.key === 'S') {
+        openPresenterMode();
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      } else if (e.key === 't' || e.key === 'T') {
+        toggleTimer();
+      } else if (e.key === 'r' || e.key === 'R') {
+        resetTimer();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      } else if (e.key === 'h' || e.key === 'H') {
+        hud.classList.toggle('hidden');
+      }
+    });
+
+    renderSlide(0);
+  })();
+</script>
+</body>
+</html>
